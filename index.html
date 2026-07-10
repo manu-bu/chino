@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="es" data-skin="sakura">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bloques Chino">
+    <link rel="apple-touch-icon" href="icon-dragon.png">
+    <title>Bloques Chino</title>
+    <style>
+        :root {
+            --radio-bloque: 14px;
+            --shadow-insert: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);
+        }
+
+        /* --- SKIN: SAKURA (celeste + pétalos rosa) --- */
+        html[data-skin="sakura"] {
+            --bg-principal: #eaf3f8;
+            --bg-paneles: #ffffff;
+            --texto-base: #2c3e50;
+            --texto-medio: #475569;
+            --texto-tenue: #94a3b8;
+            --bg-superficie: #f8fafc;
+            --bg-superficie-active: #edf2f7;
+            --borde-sutil: #b08c66;
+            --shadow-soft: 0 2px 12px rgba(120, 85, 45, 0.22);
+            --color-particula: #f5c9d6;
+        }
+
+        /* --- SKIN: NATURAL (bambú, piedra, jade) --- */
+        html[data-skin="natural"] {
+            --bg-principal: #eef1ea;
+            --bg-paneles: #fbfcf9;
+            --texto-base: #2f3b2a;
+            --texto-medio: #55624c;
+            --texto-tenue: #94a08a;
+            --bg-superficie: #f1f3ec;
+            --bg-superficie-active: #e4e8db;
+            --borde-sutil: #5b7a52;
+            --shadow-soft: 0 2px 12px rgba(60, 90, 50, 0.22);
+            --color-particula: #8fae6e;
+        }
+
+        /* --- SKIN: RESTAURANTE ANTIGUO (paredes verdes, linternas rojas, madera) --- */
+        html[data-skin="restaurante"] {
+            --bg-principal: #1f3329;
+            --bg-paneles: #2b2118;
+            --texto-base: #f1e6d3;
+            --texto-medio: #cdb89c;
+            --texto-tenue: #9c8569;
+            --bg-superficie: #382a1d;
+            --bg-superficie-active: #463323;
+            --borde-sutil: #b5402f;
+            --shadow-soft: 0 2px 14px rgba(181, 64, 47, 0.35);
+            --color-particula: #d4a13d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-base);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            gap: 16px;
+            min-height: 0;
+            margin-bottom: 16px;
+        }
+
+        .left-sidebar {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            height: 100%;
+        }
+
+        .sidebar-buttons {
+            background-color: var(--bg-paneles);
+            border: 1px solid var(--borde-sutil);
+            border-radius: var(--radio-bloque);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .grupo-botones {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1 1 0;
+            min-height: 0;
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--texto-tenue);
+            letter-spacing: 0.8px;
+            margin: 8px 0 4px 0;
+            text-transform: uppercase;
+        }
+
+        .add-block-btn {
+            width: 100%;
+            flex: 1 1 0;
+            min-height: 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1.5px solid;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .add-block-btn:active {
+            transform: scale(0.98);
+            filter: brightness(0.95);
+        }
+
+        .focus-box-container {
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .focus-cell {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            border: 1px solid var(--borde-sutil);
+            border-radius: var(--radio-bloque);
+            background-color: var(--bg-paneles);
+            padding: 14px;
+            box-sizing: border-box;
+            box-shadow: var(--shadow-soft);
+            transition: background-color 0.2s ease;
+        }
+
+        .focus-label {
+            font-size: 0.55rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--texto-tenue);
+            letter-spacing: 0.6px;
+        }
+
+        .focus-pinyin {
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1;
+            align-self: center;
+            letter-spacing: -0.5px;
+        }
+
+        .focus-hanzi {
+            font-size: 1.3rem;
+            font-weight: 600;
+            align-self: center;
+        }
+
+        .right-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+            min-width: 0;
+        }
+
+        .workspace {
+            flex: 1;
+            background: transparent;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .dynamic-cell {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            min-width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            position: relative;
+            box-sizing: border-box;
+            cursor: pointer;
+            user-select: none;
+            padding: 10px 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .dynamic-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .dynamic-cell.editing {
+            border: 2.5px solid #94a3b8 !important;
+            padding: 9px 13px;
+        }
+
+        .cell-label {
+            font-size: 0.55rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .token-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .token-pinyin {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            letter-spacing: -0.3px;
+        }
+
+        .token-hanzi {
+            font-size: 1rem;
+            font-weight: 600;
+            opacity: 0.85;
+            align-self: center;
+            margin-top: 2px;
+        }
+
+        .token-empty {
+            font-size: 1.4rem;
+            font-weight: 700;
+            opacity: 0.25;
+            align-self: center;
+        }
+
+        .fila-principal {
+            flex: 0 0 440px;
+            display: flex;
+            gap: 16px;
+            min-height: 0;
+            min-width: 0;
+        }
+
+        .columna-lateral {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .components-breakdown-area.columna-estructura {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .components-breakdown-area.columna-frecuentes {
+            flex: 0 0 200px;
+        }
+
+        .dropdown-flat-area {
+            flex: 2;
+            min-width: 0;
+            background-color: var(--bg-paneles);
+            border: 1px solid var(--borde-sutil);
+            border-radius: var(--radio-bloque);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .frecuente-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 31%;
+            min-height: 64px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-sizing: border-box;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+            padding: 6px 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .frecuente-card:active {
+            transform: scale(0.95);
+        }
+
+        .frecuente-card-pinyin {
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .frecuente-card-hanzi {
+            font-size: 0.7rem;
+            font-weight: 600;
+            opacity: 0.85;
+            margin-top: 1px;
+            text-align: center;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .frecuente-card-esp {
+            font-size: 0.58rem;
+            font-weight: 600;
+            opacity: 0.75;
+            margin-top: 3px;
+            text-align: center;
+            line-height: 1.1;
+            padding: 0 2px;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        #frecuentes-area {
+            overflow-y: auto;
+        }
+
+        .frecuentes-grilla {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+        }
+
+        .frecuente-vacio {
+            margin: auto;
+            font-style: italic;
+            font-size: 0.8rem;
+            color: var(--texto-tenue);
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .components-breakdown-area {
+            flex: 1;
+            min-width: 0;
+            background-color: var(--bg-paneles);
+            border: 1px solid var(--borde-sutil);
+            border-radius: var(--radio-bloque);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .components-title {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: var(--texto-tenue);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            border-bottom: 1px dashed var(--borde-sutil);
+            padding-bottom: 4px;
+        }
+
+        .component-mini-card {
+            padding: 6px 10px;
+            border-radius: 8px;
+            background-color: var(--bg-superficie);
+            border-left: 3px solid #3b82f6;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .component-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .component-hanzi {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--texto-base);
+        }
+
+        .component-pinyin {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--texto-base);
+        }
+
+        .component-meaning {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--texto-medio);
+        }
+
+        .flat-item {
+            padding: 10px 16px;
+            border-radius: 10px;
+            background-color: var(--bg-superficie);
+            border: 1px solid rgba(0,0,0,0.02);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.1s ease, transform 0.05s ease;
+        }
+
+        .flat-item:active {
+            background-color: var(--bg-superficie-active);
+            transform: scale(0.99);
+        }
+
+        .bottom-layout {
+            height: 110px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .result-container {
+            flex: 1;
+            background-color: var(--bg-paneles);
+            border: 1px solid var(--borde-sutil);
+            border-radius: var(--radio-bloque);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .phrase-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+
+        .word-block {
+            padding: 8px 16px;
+            border-radius: 10px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            min-width: 75px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .block-pinyin {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .block-hanzi {
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.75;
+            margin-top: 1px;
+        }
+
+        .block-translation {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 6px;
+            padding-top: 4px;
+            border-top: 1px dashed rgba(0,0,0,0.08);
+            width: 100%;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .command-sidebar {
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .cmd-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1.5px solid #b85c4f;
+            background-color: var(--bg-paneles);
+            color: #b85c4f;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: center;
+            letter-spacing: 0.3px;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 10px rgba(184, 92, 79, 0.22);
+        }
+
+        .cmd-btn:active {
+            background-color: #b85c4f;
+            color: #ffffff;
+        }
+
+        #sakura-fondo {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .petalo-sakura {
+            position: absolute;
+            top: -40px;
+            pointer-events: none;
+            will-change: transform, opacity;
+            animation-name: caida-petalo-sakura;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes caida-petalo-sakura {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+            8% { opacity: 0.85; }
+            50% { transform: translate(var(--sway), 55vh) rotate(calc(var(--rot) * 0.5)); }
+            92% { opacity: 0.8; }
+            100% { transform: translate(calc(var(--sway) * 1.6), 115vh) rotate(var(--rot)); opacity: 0; }
+        }
+
+        .main-layout, .bottom-layout {
+            position: relative;
+            z-index: 1;
+        }
+
+        #selector-skin-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radio-bloque);
+            background-color: var(--bg-paneles);
+            border: 1px solid var(--borde-sutil);
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s ease;
+        }
+
+        #selector-skin-btn:active {
+            transform: scale(0.94);
+        }
+
+        #menu-skins {
+            position: fixed;
+            top: 64px;
+            right: 16px;
+            background-color: var(--bg-paneles);
+            border: 1px solid var(--borde-sutil);
+            box-shadow: var(--shadow-soft);
+            border-radius: var(--radio-bloque);
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 10;
+            min-width: 150px;
+        }
+
+        #menu-skins.abierto {
+            display: flex;
+        }
+
+        .opcion-skin {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--texto-base);
+            text-align: left;
+            transition: background-color 0.1s ease;
+        }
+
+        .opcion-skin:active {
+            background-color: var(--bg-superficie);
+        }
+
+        .opcion-skin-emoji {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sakura-fondo" aria-hidden="true"></div>
+
+    <div id="selector-skin-btn" onclick="toggleMenuSkins()">
+        <span id="selector-skin-icono">🌸</span>
+    </div>
+
+    <div id="menu-skins">
+        <button class="opcion-skin" onclick="cambiarSkin('sakura')">
+            <span class="opcion-skin-emoji">🌸</span>
+            <span class="opcion-skin-nombre">Sakura</span>
+        </button>
+        <button class="opcion-skin" onclick="cambiarSkin('natural')">
+            <span class="opcion-skin-emoji">🎍</span>
+            <span class="opcion-skin-nombre">Natural</span>
+        </button>
+        <button class="opcion-skin" onclick="cambiarSkin('restaurante')">
+            <span class="opcion-skin-emoji">🏮</span>
+            <span class="opcion-skin-nombre">Restaurante</span>
+        </button>
+    </div>
+
+    <div class="main-layout">
+        <div class="left-sidebar">
+            <div class="sidebar-buttons">
+                <div class="section-label">Básicos</div>
+                <div id="botones-basicos" class="grupo-botones"></div>
+                
+                <div class="section-label">Extras</div>
+                <div id="botones-extras" class="grupo-botones"></div>
+            </div>
+
+            <div class="focus-box-container">
+                <div class="focus-cell" id="focus-container">
+                    <div class="focus-label">BLOQUES</div>
+                    <div class="focus-pinyin">-</div>
+                    <div class="focus-hanzi">空</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-content">
+            <div class="workspace" id="workspace-area"></div>
+
+            <div class="fila-principal">
+                <div class="dropdown-flat-area" id="flat-menu-area"></div>
+
+                <div class="columna-lateral">
+                    <div class="components-breakdown-area columna-estructura" id="components-display-area"></div>
+                    <div class="components-breakdown-area columna-frecuentes" id="frecuentes-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-layout">
+        <div class="result-container">
+            <div class="phrase-row" id="phrase-output"></div>
+        </div>
+
+        <div class="command-sidebar">
+            <button class="cmd-btn" onclick="vaciarBloqueActual()">Vaciar Bloque</button>
+            <button class="cmd-btn" onclick="borrarBloqueActual()">Borrar Bloque</button>
+            <button class="cmd-btn" onclick="borrarTodoElEscritorio()">Borrar Todo</button>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNCIÓN DE AUDIO ---
+        function reproducirSonido(texto) {
+            const msg = new SpeechSynthesisUtterance(texto);
+            msg.lang = 'zh-CN';
+            msg.rate = 0.4;
+            window.speechSynthesis.speak(msg);
+        }
+
+        const categoriasBasicas = [
+            { id: "personas", nombre: "PERSONAS", icono: "🏮", bg: "#fff1f2", text: "#e11d48" },
+            { id: "tiempos", nombre: "TIEMPOS", icono: "🎃", bg: "#fff7ed", text: "#ea580c" },
+            { id: "lugares", nombre: "LUGARES", icono: "😃", bg: "#fefce8", text: "#ca8a04" },
+            { id: "auxiliares", nombre: "AUXILIARES", icono: "🍀", bg: "#f0fdf4", text: "#16a34a" },
+            { id: "verbos", nombre: "VERBOS", icono: "🪼", bg: "#f0f9ff", text: "#0284c7" },
+            { id: "objetos", nombre: "OBJETOS", icono: "🔮", bg: "#faf5ff", text: "#9333ea" }
+        ];
+
+        const categoriasExtras = [
+            { id: "preguntas", nombre: "PREGUNTAS", icono: "🌸", bg: "#fdf2f8", text: "#db2777" },
+            { id: "adjetivos", nombre: "ADJETIVOS", icono: "🧊", bg: "#ecfeff", text: "#0891b2" },
+            { id: "adverbios", nombre: "ADVERBIOS", icono: "🐻", bg: "#faf8f5", text: "#854d0e" },
+            { id: "conectores", nombre: "CONECTORES", icono: "⚙️", bg: "#f8fafc", text: "#475569" },
+            { id: "clasificadores", nombre: "CLASIFICADORES", icono: "🐾", bg: "#f1f5f9", text: "#0f172a" },
+            { id: "numeros", nombre: "NÚMEROS", icono: "🎱", bg: "#f4f4f5", text: "#000000" }
+        ];
+
+        const todasLasCategorias = [...categoriasBasicas, ...categoriasExtras];
+
+        const vocabulario = {
+            personas: [
+                { hanzi: "朋友", pinyin: "péngyou", esp: "Amigo" },
+                { hanzi: "老人", pinyin: "lǎorén", esp: "Anciano / Persona mayor" },
+                { hanzi: "司机", pinyin: "sījī", esp: "Chofer" },
+                { hanzi: "厨师", pinyin: "chúshī", esp: "Cocinero" },
+                { hanzi: "同事", pinyin: "tóngshì", esp: "Colega / Compañero de trabajo" },
+                { hanzi: "他", pinyin: "tā", esp: "Él" },
+                { hanzi: "她", pinyin: "tā", esp: "Ella" },
+                { hanzi: "它", pinyin: "tā", esp: "Ello" },
+                { hanzi: "员工", pinyin: "yuángōng", esp: "Empleado / Staff" },
+                { hanzi: "妻子", pinyin: "qīzi", esp: "Esposa" },
+                { hanzi: "丈夫", pinyin: "zhàngfu", esp: "Esposo" },
+                { hanzi: "家人", pinyin: "jiārén", esp: "Familia" },
+                { hanzi: "经理", pinyin: "jīnglǐ", esp: "Gerente" },
+                { hanzi: "保安", pinyin: "bǎo'ān", esp: "Guardia de seguridad" },
+                { hanzi: "导游", pinyin: "dǎoyóu", esp: "Guía de turismo" },
+                { hanzi: "姐姐", pinyin: "jiějie", esp: "Hermana mayor" },
+                { hanzi: "妹妹", pinyin: "mèimei", esp: "Hermana menor" },
+                { hanzi: "哥哥", pinyin: "gēge", esp: "Hermano mayor" },
+                { hanzi: "弟弟", pinyin: "dìdi", esp: "Hermano menor" },
+                { hanzi: "男人", pinyin: "nánrén", esp: "Hombre" },
+                { hanzi: "客人", pinyin: "kèrén", esp: "Huésped / Cliente" },
+                { hanzi: "老板", pinyin: "lǎobǎn", esp: "Jefe / Dueño" },
+                { hanzi: "妈妈", pinyin: "māma", esp: "Mamá" },
+                { hanzi: "医生", pinyin: "yīshēng", esp: "Médico" },
+                { hanzi: "女人", pinyin: "nǚrén", esp: "Mujer" },
+                { hanzi: "孩子", pinyin: "háizi", esp: "Niño / Hijo" },
+                { hanzi: "我们", pinyin: "wǒmen", esp: "Nosotros" },
+                { hanzi: "别人", pinyin: "biérén", esp: "Otras personas" },
+                { hanzi: "爸爸", pinyin: "bàba", esp: "Papá" },
+                { hanzi: "人", pinyin: "rén", esp: "Persona" },
+                { hanzi: "负责人", pinyin: "fùzérén", esp: "Persona a cargo / Responsable" },
+                { hanzi: "清扫员", pinyin: "qīngsǎoyuán", esp: "Personal de limpieza" },
+                { hanzi: "们", pinyin: "men", esp: "Pluralizador (-s)" },
+                { hanzi: "警察", pinyin: "jǐngchá", esp: "Policía" },
+                { hanzi: "接待员", pinyin: "jiēdàiyuán", esp: "Recepcionista" },
+                { hanzi: "先生", pinyin: "xiānsheng", esp: "Señor" },
+                { hanzi: "女士", pinyin: "nǔshì", esp: "Señora" },
+                { hanzi: "小姐", pinyin: "xiǎojiě", esp: "Señorita" },
+                { hanzi: "服务员", pinyin: "fúwùyuán", esp: "Staff / Camarero" },
+                { hanzi: "护照持有者", pinyin: "hùzhào chíyǒuzhě", esp: "Titular del pasaporte" },
+                { hanzi: "大家", pinyin: "dàjiā", esp: "Todos (público)" },
+                { hanzi: "旅游者", pinyin: "lǚyóuzhě", esp: "Turista" },
+                { hanzi: "自己", pinyin: "zìjǐ", esp: "Uno mismo" },
+                { hanzi: "您", pinyin: "nín", esp: "Usted (Respetuoso)" },
+                { hanzi: "你", pinyin: "nǐ", esp: "Vos" },
+                { hanzi: "我", pinyin: "wǒ", esp: "Yo" }
+            ],
+            tiempos: [
+                { hanzi: "有时候", pinyin: "yǒu shíhou", esp: "A veces" },
+                { hanzi: "四月", pinyin: "sìyuè", esp: "Abril" },
+                { hanzi: "八月", pinyin: "bāyuè", esp: "Agosto" },
+                { hanzi: "现在", pinyin: "xiànzài", esp: "Ahora" },
+                { hanzi: "年", pinyin: "nián", esp: "Año" },
+                { hanzi: "以前", pinyin: "yǐqián", esp: "Antes" },
+                { hanzi: "昨天", pinyin: "zuótiān", esp: "Ayer" },
+                { hanzi: "刻", pinyin: "kè", esp: "Cuarto de hora" },
+                { hanzi: "以后", pinyin: "yǐhòu", esp: "Después" },
+                { hanzi: "号", pinyin: "hào", esp: "Día del mes" },
+                { hanzi: "十二月", pinyin: "shí'èryuè", esp: "Diciembre" },
+                { hanzi: "星期天", pinyin: "xīngqītiān", esp: "Domingo" },
+                { hanzi: "一月", pinyin: "yīyuè", esp: "Enero" },
+                { hanzi: "马上", pinyin: "mǎshàng", esp: "Enseguida / Ya mismo" },
+                { hanzi: "二月", pinyin: "èryuè", esp: "Febrero" },
+                { hanzi: "经常", pinyin: "jīngcháng", esp: "Frecuentemente" },
+                { hanzi: "小时", pinyin: "xiǎoshí", esp: "Hora (duración)" },
+                { hanzi: "点", pinyin: "diǎn", esp: "Hora (en punto / momento)" },
+                { hanzi: "今天", pinyin: "jīntiān", esp: "Hoy" },
+                { hanzi: "星期四", pinyin: "xīngqīsì", esp: "Jueves" },
+                { hanzi: "七月", pinyin: "qīyuè", esp: "Julio" },
+                { hanzi: "六月", pinyin: "liùyuè", esp: "Junio" },
+                { hanzi: "星期一", pinyin: "xīngqīyī", esp: "Lunes" },
+                { hanzi: "明天", pinyin: "míngtiān", esp: "Mañana" },
+                { hanzi: "星期二", pinyin: "xīngqī'èr", esp: "Martes" },
+                { hanzi: "三月", pinyin: "sānyuè", esp: "Marzo" },
+                { hanzi: "五月", pinyin: "wǔyuè", esp: "Mayo" },
+                { hanzi: "半", pinyin: "bàn", esp: "Media / Medio" },
+                { hanzi: "中午", pinyin: "zhōngwǔ", esp: "Mediodía" },
+                { hanzi: "月", pinyin: "yuè", esp: "Mes / Luna" },
+                { hanzi: "星期三", pinyin: "xīngqīsān", esp: "Miércoles" },
+                { hanzi: "分", pinyin: "fēn", esp: "Minuto" },
+                { hanzi: "十一月", pinyin: "shíyīyuè", esp: "Noviembre" },
+                { hanzi: "从不", pinyin: "cóngbù", esp: "Nunca" },
+                { hanzi: "十月", pinyin: "shíyuè", esp: "Octubre" },
+                { hanzi: "早上", pinyin: "zǎoshang", esp: "Por la mañana" },
+                { hanzi: "晚上", pinyin: "wǎnshang", esp: "Por la noche" },
+                { hanzi: "星期六", pinyin: "xīngqīliù", esp: "Sábado" },
+                { hanzi: "秒", pinyin: "miǎo", esp: "Segundo" },
+                { hanzi: "星期", pinyin: "xīngqī", esp: "Semana" },
+                { hanzi: "九月", pinyin: "jiǔyuè", esp: "Septiembre" },
+                { hanzi: "总是", pinyin: "zǒngshì", esp: "Siempre" },
+                { hanzi: "下午", pinyin: "xiàwǔ", esp: "Tarde" },
+                { hanzi: "晚", pinyin: "wǎn", esp: "Tarde / Noche / PM" },
+                { hanzi: "早", pinyin: "zǎo", esp: "Temprano / AM" },
+                { hanzi: "星期五", pinyin: "xīngqīwǔ", esp: "Viernes" }
+            ],
+            lugares: [
+                { hanzi: "下面", pinyin: "xiàmiàn", esp: "Abajo" },
+                { hanzi: "前面", pinyin: "qiánmiàn", esp: "Adelante" },
+                { hanzi: "里面", pinyin: "lǐmiàn", esp: "Adentro" },
+                { hanzi: "机场", pinyin: "jīchǎng", esp: "Aeropuerto" },
+                { hanzi: "外面", pinyin: "wàimiàn", esp: "Afuera" },
+                { hanzi: "旁边", pinyin: "pángbiān", esp: "Al lado" },
+                { hanzi: "那里", pinyin: "nàlǐ", esp: "Allí" },
+                { hanzi: "在这里", pinyin: "zài zhèlǐ", esp: "Aquí" },
+                { hanzi: "这里", pinyin: "zhèlǐ", esp: "Aquí" },
+                { hanzi: "上面", pinyin: "shàngmiàn", esp: "Arriba" },
+                { hanzi: "电梯", pinyin: "diàntī", esp: "Ascensor" },
+                { hanzi: "后面", pinyin: "hòumiàn", esp: "Atrás" },
+                { hanzi: "阳台", pinyin: "yángtái", esp: "Balcón" },
+                { hanzi: "银行", pinyin: "yínháng", esp: "Banco" },
+                { hanzi: "洗手间", pinyin: "xǐshǒujiān", esp: "Baño" },
+                { hanzi: "浴室", pinyin: "yùshì", esp: "Baño (habitación)" },
+                { hanzi: "厕所", pinyin: "cèsuǒ", esp: "Baño (público)" },
+                { hanzi: "酒吧", pinyin: "jiǔbā", esp: "Bar" },
+                { hanzi: "咖啡厅", pinyin: "kāfēitīng", esp: "Cafetería" },
+                { hanzi: "购物中心", pinyin: "gòuwù zhōngxīn", esp: "Centro comercial" },
+                { hanzi: "市中心", pinyin: "shì zhōngxīn", esp: "Centro de la ciudad" },
+                { hanzi: "附近", pinyin: "fùjìn", esp: "Cerca / Alrededor" },
+                { hanzi: "厨房", pinyin: "chúfáng", esp: "Cocina" },
+                { hanzi: "警察局", pinyin: "jǐngchájú", esp: "Comisaría" },
+                { hanzi: "中间", pinyin: "zhōngjiān", esp: "En el medio" },
+                { hanzi: "对面", pinyin: "duìmiàn", esp: "Enfrente" },
+                { hanzi: "车站", pinyin: "chēzhàn", esp: "Estación (bus/tren)" },
+                { hanzi: "地铁站", pinyin: "dìtiě zhàn", esp: "Estación de metro" },
+                { hanzi: "停车场", pinyin: "tíngchēchǎng", esp: "Estacionamiento" },
+                { hanzi: "药店", pinyin: "yàodiàn", esp: "Farmacia" },
+                { hanzi: "健身房", pinyin: "jiànshēnfáng", esp: "Gimnasio" },
+                { hanzi: "房间", pinyin: "fángjiān", esp: "Habitación" },
+                { hanzi: "医院", pinyin: "yīyuàn", esp: "Hospital" },
+                { hanzi: "酒店", pinyin: "jiǔdiàn", esp: "Hotel" },
+                { hanzi: "花园", pinyin: "huāyuán", esp: "Jardín" },
+                { hanzi: "右边", pinyin: "yòu biān", esp: "Lado derecho" },
+                { hanzi: "左边", pinyin: "zuǒbiān", esp: "Lado izquierdo" },
+                { hanzi: "地方", pinyin: "dìfāng", esp: "Lugar" },
+                { hanzi: "博物馆", pinyin: "bówùguǎn", esp: "Museo" },
+                { hanzi: "公园", pinyin: "gōngyuán", esp: "Parque" },
+                { hanzi: "走廊", pinyin: "zǒuláng", esp: "Pasillo" },
+                { hanzi: "游泳池", pinyin: "yóuyǒngchí", esp: "Piscina" },
+                { hanzi: "广场", pinyin: "guǎngchǎng", esp: "Plaza" },
+                { hanzi: "前台", pinyin: "qiántái", esp: "Recepción" },
+                { hanzi: "餐厅", pinyin: "cāntīng", esp: "Restaurante" },
+                { hanzi: "安全出口", pinyin: "ānquán chūkǒu", esp: "Salida de emergencia" },
+                { hanzi: "超市", pinyin: "chāoshì", esp: "Supermercado" }
+            ],
+            auxiliares: [
+                { hanzi: "了", pinyin: "le", esp: "(Acción terminada o cambio)" },
+                { hanzi: "谢谢", pinyin: "xièxie", esp: "Agradecer" },
+                { hanzi: "爱", pinyin: "ài", esp: "Amar / Encantar (hacer algo)" },
+                { hanzi: "敢", pinyin: "gǎn", esp: "Animarse / Atreverse" },
+                { hanzi: "帮", pinyin: "bāng", esp: "Ayudar a (hacer algo)" },
+                { hanzi: "欢迎", pinyin: "huānyíng", esp: "Bienvenido" },
+                { hanzi: "再见", pinyin: "zàijiàn", esp: "Chau / Hasta luego" },
+                { hanzi: "继续", pinyin: "jìxù", esp: "Continuar" },
+                { hanzi: "不客气", pinyin: "bù kèqi", esp: "De nada" },
+                { hanzi: "该", pinyin: "gāi", esp: "Deber" },
+                { hanzi: "应该", pinyin: "yīnggāi", esp: "Debería (Consejo)" },
+                { hanzi: "决定", pinyin: "juédìng", esp: "Decidir" },
+                { hanzi: "不好意思", pinyin: "bù hǎo yìsi", esp: "Disculpe (informal/leve)" },
+                { hanzi: "开始", pinyin: "kāishǐ", esp: "Empezar a" },
+                { hanzi: "希望", pinyin: "xīwàng", esp: "Esperar / Tener la esperanza" },
+                { hanzi: "着", pinyin: "zhe", esp: "(Estado continuo)" },
+                { hanzi: "在", pinyin: "zài", esp: "Estar (haciendo algo ahora)" },
+                { hanzi: "愿意", pinyin: "yuànyì", esp: "Estar dispuesto a" },
+                { hanzi: "过", pinyin: "guò", esp: "(Experiencia pasada)" },
+                { hanzi: "喜欢", pinyin: "xǐhuān", esp: "Gustar" },
+                { hanzi: "你好", pinyin: "nǐ hǎo", esp: "Hola" },
+                { hanzi: "尝试", pinyin: "chángshì", esp: "Intentar / Probar" },
+                { hanzi: "正在", pinyin: "zhèngzài", esp: "Justo ahora (Progresivo)" },
+                { hanzi: "不用", pinyin: "bùyòng", esp: "No hace falta / No es necesario" },
+                { hanzi: "没关系", pinyin: "méi guānxi", esp: "No hay problema / Está bien" },
+                { hanzi: "停止", pinyin: "tíngzhǐ", esp: "Parar / Detener" },
+                { hanzi: "对不起", pinyin: "duìbuqǐ", esp: "Perdón / Disculpe" },
+                { hanzi: "打算", pinyin: "dǎsuàn", esp: "Planear / Tener la intención de" },
+                { hanzi: "能", pinyin: "néng", esp: "Poder (Capacidad física/técnica)" },
+                { hanzi: "可以", pinyin: "kěyǐ", esp: "Poder (Permiso / Posibilidad)" },
+                { hanzi: "请", pinyin: "qǐng", esp: "Por favor / Invitar a" },
+                { hanzi: "准备", pinyin: "zhǔnbèi", esp: "Prepararse para / Estar por..." },
+                { hanzi: "想", pinyin: "xiǎng", esp: "Querer / Desear" },
+                { hanzi: "要", pinyin: "yào", esp: "Querer / Necesitar" },
+                { hanzi: "会", pinyin: "huì", esp: "Saber (Habilidad aprendida)" },
+                { hanzi: "必须", pinyin: "bìxū", esp: "Tener que (Obligación fuerte)" },
+                { hanzi: "结束", pinyin: "jiéshù", esp: "Terminar de" }
+            ],
+            verbos: [
+                { hanzi: "开", pinyin: "kāi", esp: "Abrir / Encender" },
+                { hanzi: "帮助", pinyin: "bāngzhù", esp: "Ayudar" },
+                { hanzi: "喝", pinyin: "hē", esp: "Beber" },
+                { hanzi: "找", pinyin: "zhǎo", esp: "Buscar" },
+                { hanzi: "换", pinyin: "huàn", esp: "Cambiar" },
+                { hanzi: "走", pinyin: "zǒu", esp: "Caminar / Irse" },
+                { hanzi: "关", pinyin: "guān", esp: "Cerrar / Apagar" },
+                { hanzi: "吃", pinyin: "chī", esp: "Comer" },
+                { hanzi: "买", pinyin: "mǎi", esp: "Comprar" },
+                { hanzi: "开 (车)", pinyin: "kāi (chē)", esp: "Conducir" },
+                { hanzi: "给", pinyin: "gěi", esp: "Dar" },
+                { hanzi: "退房", pinyin: "tuìfáng", esp: "Dejar la habitación (Check-out)" },
+                { hanzi: "休息", pinyin: "xiūxi", esp: "Descansar" },
+                { hanzi: "懂", pinyin: "dǒng", esp: "Entender" },
+                { hanzi: "进", pinyin: "jìn", esp: "Entrar" },
+                { hanzi: "写", pinyin: "xiě", esp: "Escribir" },
+                { hanzi: "听", pinyin: "tīng", esp: "Escuchar" },
+                { hanzi: "等", pinyin: "děng", esp: "Esperar" },
+                { hanzi: "在", pinyin: "zài", esp: "Estar / Estar en" },
+                { hanzi: "签字", pinyin: "qiānzì", esp: "Firmar" },
+                { hanzi: "说", pinyin: "shuō", esp: "Hablar / Decir" },
+                { hanzi: "做", pinyin: "zuò", esp: "Hacer / Fabricar" },
+                { hanzi: "去", pinyin: "qù", esp: "Ir" },
+                { hanzi: "打扫", pinyin: "dǎsǎo", esp: "Limpiar" },
+                { hanzi: "叫", pinyin: "jiào", esp: "Llamar" },
+                { hanzi: "看", pinyin: "kàn", esp: "Mirar / Ver / Leer" },
+                { hanzi: "需要", pinyin: "xūyào", esp: "Necesitar" },
+                { hanzi: "支付", pinyin: "zhīfù", esp: "Pagar" },
+                { hanzi: "刷卡", pinyin: "shuākǎ", esp: "Pasar tarjeta" },
+                { hanzi: "放", pinyin: "fàng", esp: "Poner / Dejar" },
+                { hanzi: "问", pinyin: "wèn", esp: "Preguntar" },
+                { hanzi: "要", pinyin: "yào", esp: "Querer" },
+                { hanzi: "想要", pinyin: "xiǎngyào", esp: "Querer / Desear" },
+                { hanzi: "登记", pinyin: "dēngjì", esp: "Registrar (Check-in)" },
+                { hanzi: "修理", pinyin: "xiūlǐ", esp: "Reparar / Arreglar" },
+                { hanzi: "预订", pinyin: "yùdìng", esp: "Reservar" },
+                { hanzi: "知道", pinyin: "zhīdào", esp: "Saber" },
+                { hanzi: "出", pinyin: "chū", esp: "Salir" },
+                { hanzi: "坐", pinyin: "zuò", esp: "Sentarse / Viajar en" },
+                { hanzi: "有", pinyin: "yǒu", esp: "Tener / Haber" },
+                { hanzi: "拿", pinyin: "ná", esp: "Tomar / Agarrar" },
+                { hanzi: "办理", pinyin: "bànlǐ", esp: "Tramitar / Hacer" },
+                { hanzi: "用", pinyin: "yòng", esp: "Usar" },
+                { hanzi: "来", pinyin: "lái", esp: "Venir" },
+                { hanzi: "住", pinyin: "zhù", esp: "Vivir / Alojar" }
+            ],
+            objetos: [
+                { hanzi: "油", pinyin: "yóu", esp: "Aceite" },
+                { hanzi: "机场", pinyin: "jīchǎng", esp: "Aeropuerto" },
+                { hanzi: "水", pinyin: "shuǐ", esp: "Agua" },
+                { hanzi: "热水", pinyin: "rèshuǐ", esp: "Agua caliente" },
+                { hanzi: "空调", pinyin: "kòngtiáo", esp: "Aire acondicionado" },
+                { hanzi: "大蒜", pinyin: "dàsuàn", esp: "Ajo" },
+                { hanzi: "过敏", pinyin: "guòmǐn", esp: "Alergia" },
+                { hanzi: "枕头", pinyin: "zhěntou", esp: "Almohada" },
+                { hanzi: "眼镜", pinyin: "yǎnjìng", esp: "Anteojos" },
+                { hanzi: "树", pinyin: "shù", esp: "Árbol" },
+                { hanzi: "米饭", pinyin: "mǐfàn", esp: "Arroz (cocido)" },
+                { hanzi: "电梯", pinyin: "diàntī", esp: "Ascensor" },
+                { hanzi: "糖", pinyin: "táng", esp: "Azúcar" },
+                { hanzi: "香蕉", pinyin: "xiāngjiāo", esp: "Banana" },
+                { hanzi: "浴室", pinyin: "yùshì", esp: "Baño (de habitación)" },
+                { hanzi: "厕所", pinyin: "cèsuǒ", esp: "Baño (público)" },
+                { hanzi: "电池", pinyin: "diànchí", esp: "Batería / Pila" },
+                { hanzi: "婴儿", pinyin: "yīng'ér", esp: "Bebé" },
+                { hanzi: "钱包", pinyin: "qiánbāo", esp: "Billetera" },
+                { hanzi: "嘴", pinyin: "zuǐ", esp: "Boca" },
+                { hanzi: "碗", pinyin: "wǎn", esp: "Bol / Cuenco" },
+                { hanzi: "袋子", pinyin: "dàizi", esp: "Bolsa" },
+                { hanzi: "包", pinyin: "bāo", esp: "Bolso / Mochila" },
+                { hanzi: "森林", pinyin: "sēnlín", esp: "Bosque" },
+                { hanzi: "手臂", pinyin: "shǒubì", esp: "Brazo" },
+                { hanzi: "西兰花", pinyin: "xīlánhuā", esp: "Brócoli" },
+                { hanzi: "马", pinyin: "mǎ", esp: "Caballo" },
+                { hanzi: "头", pinyin: "tóu", esp: "Cabeza" },
+                { hanzi: "咖啡厅", pinyin: "kāfēitīng", esp: "Cafetería" },
+                { hanzi: "床", pinyin: "chuáng", esp: "Cama" },
+                { hanzi: "充电器", pinyin: "chōngdiànqì", esp: "Cargador" },
+                { hanzi: "猪肉", pinyin: "zhūròu", esp: "Carne de cerdo" },
+                { hanzi: "羊肉", pinyin: "yángròu", esp: "Carne de cordero" },
+                { hanzi: "牛肉", pinyin: "niúròu", esp: "Carne de vaca" },
+                { hanzi: "洋葱", pinyin: "yángcōng", esp: "Cebolla" },
+                { hanzi: "手机", pinyin: "shǒujī", esp: "Celular" },
+                { hanzi: "牙刷", pinyin: "yáshuā", esp: "Cepillo de dientes" },
+                { hanzi: "啤酒", pinyin: "píjiǔ", esp: "Cerveza" },
+                { hanzi: "入住", pinyin: "rùzhù", esp: "Check-in" },
+                { hanzi: "巧克力", pinyin: "qiǎokèlì", esp: "Chocolate" },
+                { hanzi: "推车", pinyin: "tuīchē", esp: "Cochecito" },
+                { hanzi: "电脑", pinyin: "diànnǎo", esp: "Computadora" },
+                { hanzi: "心脏", pinyin: "xīnzàng", esp: "Corazón" },
+                { hanzi: "勺子", pinyin: "sháozi", esp: "Cuchara" },
+                { hanzi: "刀", pinyin: "dāo", esp: "Cuchillo" },
+                { hanzi: "牙", pinyin: "yá", esp: "Diente" },
+                { hanzi: "钱", pinyin: "qián", esp: "Dinero" },
+                { hanzi: "行李", pinyin: "xíngli", esp: "Equipaje" },
+                { hanzi: "背", pinyin: "bèi", esp: "Espalda" },
+                { hanzi: "镜子", pinyin: "jìngzi", esp: "Espejo" },
+                { hanzi: "车站", pinyin: "chēzhàn", esp: "Estación" },
+                { hanzi: "停车场", pinyin: "tíngchēchǎng", esp: "Estacionamiento" },
+                { hanzi: "发票", pinyin: "fāpiào", esp: "Factura / Recibo" },
+                { hanzi: "面条", pinyin: "miàntiáo", esp: "Fideos" },
+                { hanzi: "发烧", pinyin: "fāshāo", esp: "Fiebre" },
+                { hanzi: "花", pinyin: "huā", esp: "Flor" },
+                { hanzi: "草莓", pinyin: "cǎoméi", esp: "Frutilla" },
+                { hanzi: "火", pinyin: "huǒ", esp: "Fuego" },
+                { hanzi: "饼干", pinyin: "bǐnggān", esp: "Galletita" },
+                { hanzi: "喉咙", pinyin: "hóulóng", esp: "Garganta" },
+                { hanzi: "猫", pinyin: "māo", esp: "Gato" },
+                { hanzi: "房间", pinyin: "fángjiān", esp: "Habitación" },
+                { hanzi: "汉堡包", pinyin: "hànbǎobāo", esp: "Hamburguesa" },
+                { hanzi: "冰箱", pinyin: "bīngxiāng", esp: "Heladera" },
+                { hanzi: "冰淇淋", pinyin: "bīngqílín", esp: "Helado" },
+                { hanzi: "受伤", pinyin: "shòushāng", esp: "Herida / Lastimado" },
+                { hanzi: "冰", pinyin: "bīng", esp: "Hielo" },
+                { hanzi: "蘑菇", pinyin: "mógu", esp: "Hongo / Champiñón" },
+                { hanzi: "骨头", pinyin: "gǔtou", esp: "Hueso" },
+                { hanzi: "鸡蛋", pinyin: "jīdàn", esp: "Huevo" },
+                { hanzi: "生姜", pinyin: "shēngjiāng", esp: "Jengibre" },
+                { hanzi: "玩具", pinyin: "wánjù", esp: "Juguete" },
+                { hanzi: "灯", pinyin: "dēng", esp: "Lámpara / Luz" },
+                { hanzi: "笔", pinyin: "bǐ", esp: "Lapicera / Pluma" },
+                { hanzi: "牛奶", pinyin: "niúnǎi", esp: "Leche" },
+                { hanzi: "生菜", pinyin: "shēngcài", esp: "Lechuga" },
+                { hanzi: "书", pinyin: "shū", esp: "Libro" },
+                { hanzi: "柠檬", pinyin: "níngméng", esp: "Limón" },
+                { hanzi: "钥匙", pinyin: "yàoshi", esp: "Llave" },
+                { hanzi: "雨", pinyin: "yǔ", esp: "Lluvia" },
+                { hanzi: "月亮", pinyin: "yuèliang", esp: "Luna" },
+                { hanzi: "手", pinyin: "shǒu", esp: "Mano" },
+                { hanzi: "黄油", pinyin: "huángyóu", esp: "Manteca" },
+                { hanzi: "苹果", pinyin: "píngguǒ", esp: "Manzana" },
+                { hanzi: "地图", pinyin: "dìtú", esp: "Mapa" },
+                { hanzi: "海", pinyin: "hǎi", esp: "Mar" },
+                { hanzi: "头晕", pinyin: "tóuyūn", esp: "Mareo" },
+                { hanzi: "海鲜", pinyin: "hǎixiān", esp: "Mariscos" },
+                { hanzi: "药", pinyin: "yào", esp: "Medicina" },
+                { hanzi: "桌子", pinyin: "zhuōzi", esp: "Mesa" },
+                { hanzi: "蜂蜜", pinyin: "fēngmì", esp: "Miel" },
+                { hanzi: "山", pinyin: "shān", esp: "Montaña" },
+                { hanzi: "橙子", pinyin: "chéngzi", esp: "Naranja" },
+                { hanzi: "鼻子", pinyin: "bízi", esp: "Nariz" },
+                { hanzi: "雪", pinyin: "xuě", esp: "Nieve" },
+                { hanzi: "孩子", pinyin: "háizi", esp: "Niño / Hijo" },
+                { hanzi: "名字", pinyin: "míngzi", esp: "Nombre" },
+                { hanzi: "云", pinyin: "yún", esp: "Nube" },
+                { hanzi: "耳朵", pinyin: "ěrduo", esp: "Oído / Oreja" },
+                { hanzi: "眼睛", pinyin: "yǎnjing", esp: "Ojo" },
+                { hanzi: "鸟", pinyin: "niǎo", esp: "Pájaro" },
+                { hanzi: "筷子", pinyin: "kuàizi", esp: "Palillos" },
+                { hanzi: "面包", pinyin: "miànbāo", esp: "Pan" },
+                { hanzi: "尿布", pinyin: "niàobù", esp: "Pañal" },
+                { hanzi: "纸巾", pinyin: "zhǐjīn", esp: "Pañuelo / Servilleta" },
+                { hanzi: "肚子", pinyin: "dùzi", esp: "Panza / Estómago" },
+                { hanzi: "土豆", pinyin: "tǔdòu", esp: "Papa" },
+                { hanzi: "纸", pinyin: "zhǐ", esp: "Papel" },
+                { hanzi: "卫生纸", pinyin: "wèishēngzhǐ", esp: "Papel higiénico" },
+                { hanzi: "伞", pinyin: "sǎn", esp: "Paraguas" },
+                { hanzi: "护照", pinyin: "hùzhào", esp: "Pasaporte" },
+                { hanzi: "草", pinyin: "cǎo", esp: "Pasto / Hierba" },
+                { hanzi: "狗", pinyin: "gǒu", esp: "Perro" },
+                { hanzi: "鱼肉", pinyin: "yúròu", esp: "Pescado (carne)" },
+                { hanzi: "鱼", pinyin: "yú", esp: "Pez" },
+                { hanzi: "脚", pinyin: "jiǎo", esp: "Pie" },
+                { hanzi: "皮肤", pinyin: "pífū", esp: "Piel" },
+                { hanzi: "腿", pinyin: "tuǐ", esp: "Pierna" },
+                { hanzi: "胡椒", pinyin: "hújiāo", esp: "Pimienta" },
+                { hanzi: "楼", pinyin: "lóu", esp: "Piso / Planta" },
+                { hanzi: "比萨", pinyin: "bǐsà", esp: "Pizza" },
+                { hanzi: "盘子", pinyin: "pánzi", esp: "Plato" },
+                { hanzi: "鸡肉", pinyin: "jīròu", esp: "Pollo" },
+                { hanzi: "门", pinyin: "mén", esp: "Puerta" },
+                { hanzi: "奶酪", pinyin: "nǎilào", esp: "Queso" },
+                { hanzi: "前台", pinyin: "qiántái", esp: "Recepción" },
+                { hanzi: "表", pinyin: "biǎo", esp: "Reloj" },
+                { hanzi: "餐厅", pinyin: "cāntīng", esp: "Restaurante" },
+                { hanzi: "河", pinyin: "hé", esp: "Río" },
+                { hanzi: "衣服", pinyin: "yīfu", esp: "Ropa" },
+                { hanzi: "盐", pinyin: "yán", esp: "Sal" },
+                { hanzi: "酱油", pinyin: "jiàngyóu", esp: "Salsa de soja" },
+                { hanzi: "三明治", pinyin: "sānmíngzhì", esp: "Sándwich" },
+                { hanzi: "血", pinyin: "xiě", esp: "Sangre" },
+                { hanzi: "吹风机", pinyin: "chuīfēngjī", esp: "Secador de pelo" },
+                { hanzi: "椅子", pinyin: "yǐzi", esp: "Silla" },
+                { hanzi: "太阳", pinyin: "tàiyáng", esp: "Sol" },
+                { hanzi: "汤", pinyin: "tāng", esp: "Sopa" },
+                { hanzi: "垃圾桶", pinyin: "lājītǒng", esp: "Tacho de basura" },
+                { hanzi: "信用卡", pinyin: "xìnyòngkǎ", esp: "Tarjeta de crédito" },
+                { hanzi: "房卡", pinyin: "fángkǎ", esp: "Tarjeta de habitación" },
+                { hanzi: "出租车", pinyin: "chūzūchē", esp: "Taxi" },
+                { hanzi: "电话", pinyin: "diànhuà", esp: "Teléfono" },
+                { hanzi: "电视", pinyin: "diànshì", esp: "Televisión" },
+                { hanzi: "叉子", pinyin: "chāzi", esp: "Tenedor" },
+                { hanzi: "毛巾", pinyin: "máojīn", esp: "Toalla" },
+                { hanzi: "西红柿", pinyin: "xīhóngshì", esp: "Tomate" },
+                { hanzi: "咳嗽", pinyin: "késou", esp: "Tos" },
+                { hanzi: "葡萄", pinyin: "pútáo", esp: "Uva" },
+                { hanzi: "杯子", pinyin: "bēizi", esp: "Vaso / Taza" },
+                { hanzi: "窗户", pinyin: "chuānghu", esp: "Ventana" },
+                { hanzi: "蔬菜", pinyin: "shūcài", esp: "Verdura (general)" },
+                { hanzi: "风", pinyin: "fēng", esp: "Viento" },
+                { hanzi: "醋", pinyin: "cù", esp: "Vinagre" },
+                { hanzi: "红酒", pinyin: "hóngjiǔ", esp: "Vino tinto" },
+                { hanzi: "签证", pinyin: "qiānzhèng", esp: "Visa" },
+                { hanzi: "酸奶", pinyin: "suānnǎi", esp: "Yogur" },
+                { hanzi: "胡萝卜", pinyin: "húluóbo", esp: "Zanahoria" },
+                { hanzi: "鞋子", pinyin: "xiézi", esp: "Zapatos" }
+            ],
+            preguntas: [
+                { hanzi: "吗", pinyin: "ma", esp: "¿? (Transforma a pregunta)" },
+                { hanzi: "怎么", pinyin: "zěnme", esp: "Cómo (modo/manera)" },
+                { hanzi: "怎么走", pinyin: "zěnme zǒu", esp: "¿Cómo se llega?" },
+                { hanzi: "对吗", pinyin: "duì ma", esp: "¿Correcto? / ¿Verdad?" },
+                { hanzi: "哪", pinyin: "nǎ", esp: "Cuál" },
+                { hanzi: "什么时候", pinyin: "shénme shíhou", esp: "Cuándo" },
+                { hanzi: "多少", pinyin: "duōshǎo", esp: "Cuánto (cantidades/precios)" },
+                { hanzi: "几", pinyin: "jǐ", esp: "Cuánto (números < 10)" },
+                { hanzi: "多久", pinyin: "duō jiǔ", esp: "Cuánto tiempo" },
+                { hanzi: "多长时间", pinyin: "duō cháng shíjiān", esp: "Cuánto tiempo (duración)" },
+                { hanzi: "哪里", pinyin: "nǎlǐ", esp: "Dónde" },
+                { hanzi: "在哪里", pinyin: "zài nǎlǐ", esp: "¿En dónde está?" },
+                { hanzi: "有没有", pinyin: "yǒu méiyǒu", esp: "¿Hay o no hay?" },
+                { hanzi: "还是", pinyin: "háishì", esp: "¿O? (Para elegir)" },
+                { hanzi: "为什么", pinyin: "wèishénme", esp: "Por qué" },
+                { hanzi: "什么", pinyin: "shénme", esp: "Qué" },
+                { hanzi: "怎么样", pinyin: "zěnmeyàng", esp: "¿Qué tal? / ¿Cómo está?" },
+                { hanzi: "多大", pinyin: "duō dà", esp: "Qué tan grande / Edad" },
+                { hanzi: "多远", pinyin: "duō yuǎn", esp: "Qué tan lejos" },
+                { hanzi: "谁", pinyin: "shéi", esp: "Quién" },
+                { hanzi: "可以吗", pinyin: "kěyǐ ma", esp: "¿Se puede? / ¿Está bien?" },
+                { hanzi: "行吗", pinyin: "xíng ma", esp: "¿Vale? / ¿Te parece?" },
+                { hanzi: "呢", pinyin: "ne", esp: "¿Y tú? (Pregunta de rebote)" }
+            ],
+            adverbios: [
+                { hanzi: "太", pinyin: "tài", esp: "Demasiado (Uso: Tai...le)" },
+                { hanzi: "慢慢地", pinyin: "mànmande", esp: "Despacio" },
+                { hanzi: "最", pinyin: "zuì", esp: "El más (superlativo)" },
+                { hanzi: "马上", pinyin: "mǎshàng", esp: "Enseguida / De inmediato" },
+                { hanzi: "就", pinyin: "jiù", esp: "Enseguida / Entonces" },
+                { hanzi: "特别", pinyin: "tèbié", esp: "Especialmente" },
+                { hanzi: "非常", pinyin: "fēicháng", esp: "Extremadamente" },
+                { hanzi: "最后", pinyin: "zuìhòu", esp: "Finalmente / Por último" },
+                { hanzi: "常常", pinyin: "chángcháng", esp: "Frecuentemente / A menudo" },
+                { hanzi: "一起", pinyin: "yīqǐ", esp: "Juntos" },
+                { hanzi: "很", pinyin: "hěn", esp: "Muy (intensificador)" },
+                { hanzi: "别", pinyin: "bié", esp: "No (Imperativo: 'no hagas')" },
+                { hanzi: "没", pinyin: "méi", esp: "No (pasado/posesión)" },
+                { hanzi: "不", pinyin: "bù", esp: "No (presente/futuro)" },
+                { hanzi: "再", pinyin: "zài", esp: "Otra vez / De nuevo" },
+                { hanzi: "当然", pinyin: "dāngrán", esp: "Por supuesto" },
+                { hanzi: "可能", pinyin: "kěnéng", esp: "Posiblemente / Puede que" },
+                { hanzi: "真", pinyin: "zhēn", esp: "Realmente / De verdad" },
+                { hanzi: "刚", pinyin: "gāng", esp: "Recién / Acabo de" },
+                { hanzi: "比较", pinyin: "bǐjiào", esp: "Relativamente / Más" },
+                { hanzi: "总是", pinyin: "zǒngshì", esp: "Siempre" },
+                { hanzi: "也", pinyin: "yě", esp: "También" },
+                { hanzi: "还", pinyin: "hái", esp: "Todavía" },
+                { hanzi: "都", pinyin: "dōu", esp: "Todos / Ambos" },
+                { hanzi: "一点儿", pinyin: "yīdiǎnr", esp: "Un poco" },
+                { hanzi: "已经", pinyin: "yǐjīng", esp: "Ya" }
+            ],
+            adjetivos: [
+                { hanzi: "亲切", pinyin: "qīnqiè", esp: "Amable" },
+                { hanzi: "友好", pinyin: "yǒuhǎo", esp: "Amigable" },
+                { hanzi: "客气", pinyin: "kèqi", esp: "Atento / Cortés" },
+                { hanzi: "便宜", pinyin: "piányi", esp: "Barato" },
+                { hanzi: "对", pinyin: "duì", esp: "Bien / Correcto" },
+                { hanzi: "好", pinyin: "hǎo", esp: "Bueno / Bien" },
+                { hanzi: "累", pinyin: "lèi", esp: "Cansado" },
+                { hanzi: "贵", pinyin: "guì", esp: "Caro" },
+                { hanzi: "近", pinyin: "jìn", esp: "Cerca" },
+                { hanzi: "舒服", pinyin: "shūfu", esp: "Cómodo" },
+                { hanzi: "全", pinyin: "quán", esp: "Completo" },
+                { hanzi: "难", pinyin: "nán", esp: "Difícil" },
+                { hanzi: "幽默", pinyin: "yōumò", esp: "Divertido" },
+                { hanzi: "疼", pinyin: "téng", esp: "Dolorido" },
+                { hanzi: "疼痛", pinyin: "téngtòng", esp: "Dolorido (zona del cuerpo)" },
+                { hanzi: "特别", pinyin: "tèbié", esp: "Especial" },
+                { hanzi: "容易", pinyin: "róngyì", esp: "Fácil" },
+                { hanzi: "高兴", pinyin: "gāoxìng", esp: "Feliz" },
+                { hanzi: "难看", pinyin: "nánkàn", esp: "Feo" },
+                { hanzi: "大", pinyin: "dà", esp: "Grande" },
+                { hanzi: "美丽", pinyin: "měilì", esp: "Guapa / Bella" },
+                { hanzi: "帅", pinyin: "shuài", esp: "Guapo / Fachero" },
+                { hanzi: "饿", pinyin: "è", esp: "Hambriento" },
+                { hanzi: "肿", pinyin: "zhǒng", esp: "Hinchado" },
+                { hanzi: "重要", pinyin: "zhòngyào", esp: "Importante" },
+                { hanzi: "难受", pinyin: "nánshòu", esp: "Incómodo" },
+                { hanzi: "不全", pinyin: "bùquán", esp: "Incompleto" },
+                { hanzi: "远", pinyin: "yuǎn", esp: "Lejos" },
+                { hanzi: "慢", pinyin: "màn", esp: "Lento" },
+                { hanzi: "干净", pinyin: "gānjìng", esp: "Limpio" },
+                { hanzi: "漂亮", pinyin: "piàoliang", esp: "Lindo / Hermoso" },
+                { hanzi: "错", pinyin: "cuò", esp: "Mal / Incorrecto" },
+                { hanzi: "坏", pinyin: "huài", esp: "Malo / Roto" },
+                { hanzi: "多", pinyin: "duō", esp: "Mucho" },
+                { hanzi: "新", pinyin: "xīn", esp: "Nuevo" },
+                { hanzi: "忙", pinyin: "máng", esp: "Ocupado" },
+                { hanzi: "小", pinyin: "xiǎo", esp: "Pequeño" },
+                { hanzi: "辣", pinyin: "là", esp: "Picante / Con ardor" },
+                { hanzi: "痒", pinyin: "yǎng", esp: "Picazón / Que pica" },
+                { hanzi: "少", pinyin: "shǎo", esp: "Poco" },
+                { hanzi: "专业", pinyin: "zhuānyè", esp: "Profesional" },
+                { hanzi: "快", pinyin: "kuài", esp: "Rápido" },
+                { hanzi: "吵", pinyin: "chǎo", esp: "Ruidoso" },
+                { hanzi: "饱", pinyin: "bǎo", esp: "Satisfecho / Lleno" },
+                { hanzi: "渴", pinyin: "kě", esp: "Sediento" },
+                { hanzi: "安静", pinyin: "ānjìng", esp: "Silencioso" },
+                { hanzi: "热情", pinyin: "rèqíng", esp: "Simpático / Cálido" },
+                { hanzi: "脏", pinyin: "zāng", esp: "Sucio" },
+                { hanzi: "难过", pinyin: "nánguò", esp: "Triste" },
+                { hanzi: "旧", pinyin: "jiù", esp: "Viejo (objetos)" }
+            ],
+            conectores: [
+                { hanzi: "即便", pinyin: "jíbiàn", esp: "A pesar de que" },
+                { hanzi: "再说", pinyin: "zàishuō", esp: "Además / Aparte" },
+                { hanzi: "虽然", pinyin: "suīrán", esp: "Aunque" },
+                { hanzi: "结果", pinyin: "jiéguǒ", esp: "Como resultado / Resultado" },
+                { hanzi: "的", pinyin: "de", esp: "De / Posesivo (mi, tu, su / de algo)" },
+                { hanzi: "要不然", pinyin: "yàobùrán", esp: "De lo contrario" },
+                { hanzi: "由于", pinyin: "yóuyú", esp: "Debido a (formal)" },
+                { hanzi: "总之", pinyin: "zǒngzhī", esp: "En resumen / En conclusión" },
+                { hanzi: "然后", pinyin: "ránhòu", esp: "Entonces / Luego / Después" },
+                { hanzi: "最后", pinyin: "zuìhòu", esp: "Finalmente / Por último" },
+                { hanzi: "哪怕", pinyin: "nǎpà", esp: "Incluso si..." },
+                { hanzi: "不但", pinyin: "búdàn", esp: "No solo..." },
+                { hanzi: "或者", pinyin: "huòzhě", esp: "O (para afirmaciones)" },
+                { hanzi: "还是", pinyin: "háishì", esp: "O (para preguntas)" },
+                { hanzi: "但是", pinyin: "dànshì", esp: "Pero (contraste)" },
+                { hanzi: "比如", pinyin: "bǐrú", esp: "Por ejemplo" },
+                { hanzi: "所以", pinyin: "suǒyǐ", esp: "Por lo tanto / Por eso" },
+                { hanzi: "因为", pinyin: "yīnwèi", esp: "Porque (razón o causa)" },
+                { hanzi: "要是", pinyin: "yàoshi", esp: "Si... (condicional informal)" },
+                { hanzi: "不过", pinyin: "búguò", esp: "Sin embargo / Pero" },
+                { hanzi: "而且", pinyin: "érqiě", esp: "Sino también / Además" },
+                { hanzi: "和", pinyin: "hé", esp: "Y (conecta sustantivos)" },
+                { hanzi: "既然", pinyin: "jìrán", esp: "Ya que / Puesto que" }
+            ],
+            clasificadores: [
+                { hanzi: "些", pinyin: "xiē", esp: "Algunos (plural indefinido)" },
+                { hanzi: "只", pinyin: "zhī", esp: "Animales pequeños / Uno de un par" },
+                { hanzi: "岁", pinyin: "suì", esp: "Años de edad" },
+                { hanzi: "瓶", pinyin: "píng", esp: "Botellas" },
+                { hanzi: "碗", pinyin: "wǎn", esp: "Cuencos, bols" },
+                { hanzi: "个", pinyin: "gè", esp: "General (objetos, personas)" },
+                { hanzi: "度", pinyin: "dù", esp: "Grados (temperatura)" },
+                { hanzi: "间", pinyin: "jiān", esp: "Habitaciones, cuartos" },
+                { hanzi: "本", pinyin: "běn", esp: "Libros, cuadernos" },
+                { hanzi: "台", pinyin: "tái", esp: "Máquinas, aparatos (computadoras)" },
+                { hanzi: "口", pinyin: "kǒu", esp: "Miembros familia / Tragos" },
+                { hanzi: "支", pinyin: "zhī", esp: "Objetos alargados (bolígrafos)" },
+                { hanzi: "把", pinyin: "bǎ", esp: "Objetos con mango (llaves, sillas)" },
+                { hanzi: "条", pinyin: "tiáo", esp: "Objetos largos/flexibles (toallas, ríos)" },
+                { hanzi: "张", pinyin: "zhāng", esp: "Objetos planos (mesas, camas, papel)" },
+                { hanzi: "双", pinyin: "shuāng", esp: "Pares (zapatos, palillos)" },
+                { hanzi: "位", pinyin: "wèi", esp: "Personas (formal/huéspedes)" },
+                { hanzi: "份", pinyin: "fèn", esp: "Porciones, documentos, menús" },
+                { hanzi: "件", pinyin: "jiàn", esp: "Ropa, asuntos, equipaje" },
+                { hanzi: "杯", pinyin: "bēi", esp: "Tazas, vasos" },
+                { hanzi: "块", pinyin: "kuài", esp: "Trozos / Moneda (yuan)" },
+                { hanzi: "辆", pinyin: "liàng", esp: "Vehículos (autos, bicis)" },
+                { hanzi: "次", pinyin: "cì", esp: "Vez (frecuencia)" }
+            ],
+            numeros: [
+                { hanzi: "零", pinyin: "líng", esp: "Cero (0)" },
+                { hanzi: "一", pinyin: "yī", esp: "Uno (1)" },
+                { hanzi: "二", pinyin: "èr", esp: "Dos (2)" },
+                { hanzi: "三", pinyin: "sān", esp: "Tres (3)" },
+                { hanzi: "四", pinyin: "sì", esp: "Cuatro (4)" },
+                { hanzi: "五", pinyin: "wǔ", esp: "Cinco (5)" },
+                { hanzi: "六", pinyin: "liù", esp: "Seis (6)" },
+                { hanzi: "七", pinyin: "qī", esp: "Siete (7)" },
+                { hanzi: "八", pinyin: "bā", esp: "Ocho (8)" },
+                { hanzi: "九", pinyin: "jiǔ", esp: "Nueve (9)" },
+                { hanzi: "十", pinyin: "shí", esp: "Diez (10)" },
+                { hanzi: "百", pinyin: "bǎi", esp: "Cien (100)" },
+                { hanzi: "千", pinyin: "qiān", esp: "Mil (1000)" }
+            ]
+        };
+
+        const diccionarioCaracteres = {
+            "我": { pinyin: "wǒ", significado: "Yo / Mí", categoria: "personas" },
+            "们": { pinyin: "men", significado: "Plural (personas)", categoria: "personas" },
+            "你": { pinyin: "nǐ", significado: "Vos / Tú", categoria: "personas" },
+            "您": { pinyin: "nín", significado: "Usted", categoria: "personas" },
+            "他": { pinyin: "tā", significado: "Él", categoria: "personas" },
+            "她": { pinyin: "tā", significado: "Ella", categoria: "personas" },
+            "客": { pinyin: "kè", significado: "Huésped / Invitado", categoria: "personas" },
+            "人": { pinyin: "rén", significado: "Persona", categoria: "personas" },
+            "经": { pinyin: "jīng", significado: "Pasar por / Administrar", categoria: "personas" },
+            "理": { pinyin: "lǐ", significado: "Lógica / Gestionar", categoria: "personas" },
+            "现": { pinyin: "xiàn", significado: "Aparecer / Actual", categoria: "tiempos" },
+            "在": { pinyin: "zài", significado: "Estar en / Localizado", categoria: "lugares" },
+            "今": { pinyin: "jīn", significado: "Presente / Este", categoria: "tiempos" },
+            "天": { pinyin: "tiān", significado: "Día / Cielo", categoria: "tiempos" },
+            "明": { pinyin: "míng", significado: "Brillante / Mañana", categoria: "tiempos" },
+            "昨": { pinyin: "zuó", significado: "Pasado / Ayer", categoria: "tiempos" },
+            "早": { pinyin: "zǎo", significado: "Temprano / Mañana", categoria: "tiempos" },
+            "上": { pinyin: "shàng", significado: "Arriba / Encima", categoria: "tiempos" },
+            "晚": { pinyin: "wǎn", significado: "Tarde / Noche", categoria: "tiempos" },
+            "这": { pinyin: "zhè", significado: "Este / Esto", categoria: "lugares" },
+            "里": { pinyin: "lǐ", significado: "Dentro / Lugar", categoria: "lugares" },
+            "酒": { pinyin: "jiǔ", significado: "Vino / Alcohol", categoria: "objetos" },
+            "店": { pinyin: "diàn", significado: "Tienda / Negocio", categoria: "lugares" },
+            "房": { pinyin: "fáng", significado: "Casa / Habitación", categoria: "lugares" },
+            "间": { pinyin: "jiān", significado: "Espacio / Entre", categoria: "lugares" },
+            "前": { pinyin: "qián", significado: "Adelante / Frente", categoria: "lugares" },
+            "台": { pinyin: "tái", significado: "Plataforma / Mostrador", categoria: "lugares" },
+            "洗": { pinyin: "xǐ", significado: "Lavar", categoria: "verbos" },
+            "手": { pinyin: "shǒu", significado: "Mano", categoria: "personas" },
+            "餐": { pinyin: "cān", significado: "Comida / Plato", categoria: "objetos" },
+            "厅": { pinyin: "tīng", significado: "Salón / Sala grande", categoria: "lugares" },
+            "想": { pinyin: "xiǎng", significado: "Desear / Pensar", categoria: "auxiliares" },
+            "要": { pinyin: "yào", significado: "Querer / Requerir", categoria: "verbos" },
+            "办": { pinyin: "bàn", significado: "Hacer / Tramitar", categoria: "verbos" },
+            "入": { pinyin: "rù", significado: "Entrar / Ingresar", categoria: "verbos" },
+            "住": { pinyin: "zhù", significado: "Vivir / Residir", categoria: "verbos" },
+            "钥": { pinyin: "yào", significado: "Llave", categoria: "objetos" },
+            "匙": { pinyin: "shi", significado: "Cuchara / Llave", categoria: "objetos" },
+            "护": { pinyin: "hù", significado: "Proteger / Cuidar", categoria: "verbos" },
+            "照": { pinyin: "zhào", significado: "Fotografía / Licencia", categoria: "objetos" },
+            "吗": { pinyin: "ma", significado: "Partícula interrogativa", categoria: "preguntas" },
+            "忙": { pinyin: "máng", significado: "Ocupado", categoria: "adjetivos" },
+            "累": { pinyin: "lèi", significado: "Cansado", categoria: "adjetivos" },
+            "好": { pinyin: "hǎo", significado: "Bien / Bueno", categoria: "adjetivos" },
+            "坏": { pinyin: "huài", significado: "Estropeado / Malo", categoria: "adjetivos" },
+            "错": { pinyin: "cuò", significado: "Error / Equivocado", categoria: "adjetivos" },
+            "对": { pinyin: "duì", significado: "Correcto / Hacia", categoria: "adjetivos" },
+            "多": { pinyin: "duō", significado: "Mucho", categoria: "adjetivos" },
+            "少": { pinyin: "shǎo", significado: "Poco", categoria: "adjetivos" },
+            "大": { pinyin: "dà", significado: "Grande", categoria: "adjetivos" },
+            "小": { pinyin: "xiǎo", significado: "Pequeño", categoria: "adjetivos" },
+            "贵": { pinyin: "guì", significado: "Caro / Valioso", categoria: "adjetivos" },
+            "便": { pinyin: "pián", significado: "Conveniente", categoria: "adjetivos" },
+            "宜": { pinyin: "yí", significado: "Apropiado", categoria: "adjetivos" },
+            "漂": { pinyin: "piào", significado: "Elegante", categoria: "adjetivos" },
+            "亮": { pinyin: "liàng", significado: "Brillante / Luz", categoria: "adjetivos" },
+            "难": { pinyin: "nán", significado: "Difícil", categoria: "adjetivos" },
+            "看": { pinyin: "kàn", significado: "Mirar / Ver", categoria: "verbos" },
+            "高": { pinyin: "gāo", significado: "Alto", categoria: "adjetivos" },
+            "兴": { pinyin: "xìng", significado: "Alegría / Interés", categoria: "adjetivos" },
+            "过": { pinyin: "guò", significado: "Pasar / Atravesar", categoria: "adjetivos" },
+            "热": { pinyin: "rè", significado: "Caliente / Calor", categoria: "adjetivos" },
+            "情": { pinyin: "qíng", significado: "Sentimiento / Afecto", categoria: "adjetivos" },
+            "亲": { pinyin: "qīn", significado: "Cercano / Familiar", categoria: "adjetivos" },
+            "切": { pinyin: "qiè", significado: "Urgente", categoria: "adjetivos" },
+            "幽": { pinyin: "yōu", significado: "Oculto / Profundo", categoria: "adjetivos" },
+            "默": { pinyin: "mò", significado: "Silencioso", categoria: "adjetivos" },
+            "美": { pinyin: "měi", significado: "Hermoso / Lindo", categoria: "adjetivos" },
+            "帅": { pinyin: "shuài", significado: "Fachero", categoria: "adjetivos" },
+            "友": { pinyin: "yǒu", significado: "Amigo", categoria: "adjetivos" },
+            "专": { pinyin: "zhuān", significado: "Exclusivo / Especial", categoria: "adjetivos" },
+            "业": { pinyin: "yè", significado: "Oficio / Profesión", categoria: "adjetivos" },
+            "干": { pinyin: "gān", significado: "Seco / Limpio", categoria: "adjetivos" },
+            "净": { pinyin: "jìng", significado: "Limpio / Puro", categoria: "adjetivos" },
+            "脏": { pinyin: "zāng", significado: "Sucio", categoria: "adjetivos" },
+            "安": { pinyin: "ān", significado: "Seguro / Tranquilo", categoria: "adjetivos" },
+            "静": { pinyin: "jìng", significado: "Quieto / Silencioso", categoria: "adjetivos" },
+            "吵": { pinyin: "chǎo", significado: "Ruidoso", categoria: "adjetivos" },
+            "旧": { pinyin: "jiù", significado: "Antiguo / Viejo", categoria: "adjetivos" },
+            "新": { pinyin: "xīn", significado: "Nuevo", categoria: "adjetivos" },
+            "舒": { pinyin: "shū", significado: "Relajado", categoria: "adjetivos" },
+            "服": { pinyin: "fú", significado: "Ropa / Adaptarse", categoria: "adjetivos" },
+            "受": { pinyin: "shòu", significado: "Recibir / Aguantar", categoria: "adjetivos" },
+            "慢": { pinyin: "màn", significado: "Lento", categoria: "adjetivos" },
+            "快": { pinyin: "kuài", significado: "Rápido", categoria: "adjetivos" },
+            "容": { pinyin: "róng", significado: "Contener", categoria: "adjetivos" },
+            "易": { pinyin: "yì", significado: "Fácil", categoria: "adjetivos" },
+            "重": { pinyin: "zhòng", significado: "Importante / Pesado", categoria: "adjetivos" },
+            "特": { pinyin: "tè", significado: "Especial", categoria: "adjetivos" },
+            "别": { pinyin: "bié", significado: "Distinto", categoria: "adjetivos" },
+            "全": { pinyin: "quán", significado: "Todo / Completo", categoria: "adjetivos" },
+            "不": { pinyin: "bù", significado: "No", categoria: "adverbios" },
+            "饿": { pinyin: "è", significado: "Hambre", categoria: "adjetivos" },
+            "渴": { pinyin: "kě", significado: "Sed", categoria: "adjetivos" },
+            "疼": { pinyin: "téng", significado: "Dolor", categoria: "adjetivos" },
+            "远": { pinyin: "yuǎn", significado: "Lejos", categoria: "adjetivos" },
+            "近": { pinyin: "jìn", significado: "Cerca", categoria: "adjetivos" },
+            "饱": { pinyin: "bǎo", significado: "Lleno / Saciado", categoria: "adjetivos" },
+            "很": { pinyin: "hěn", significado: "Muy", categoria: "adverbios" },
+            "太": { pinyin: "tài", significado: "Demasiado", categoria: "adverbios" },
+            "零": { pinyin: "líng", significado: "Cero", categoria: "numeros" },
+            "一": { pinyin: "yī", significado: "Uno", categoria: "numeros" },
+            "二": { pinyin: "èr", significado: "Dos", categoria: "numeros" },
+            "三": { pinyin: "sān", significado: "Tres", categoria: "numeros" },
+            "四": { pinyin: "sì", significado: "Cuatro", categoria: "numeros" },
+            "五": { pinyin: "wǔ", significado: "Cinco", categoria: "numeros" },
+            "六": { pinyin: "liù", significado: "Seis", categoria: "numeros" },
+            "七": { pinyin: "qī", significado: "Siete", categoria: "numeros" },
+            "八": { pinyin: "bā", significado: "Ocho", categoria: "numeros" },
+            "九": { pinyin: "jiǔ", significado: "Nueve", categoria: "numeros" },
+
+            "苹": { pinyin: "píng", significado: "Manzana (raíz)", categoria: "objetos" },
+            "果": { pinyin: "guǒ", significado: "Fruta", categoria: "objetos" },
+            "香": { pinyin: "xiāng", significado: "Fragante / Aromático", categoria: "objetos" },
+            "蕉": { pinyin: "jiāo", significado: "Banana (raíz)", categoria: "objetos" },
+            "橙": { pinyin: "chéng", significado: "Naranja (fruta)", categoria: "objetos" },
+            "葡": { pinyin: "pú", significado: "Uva (raíz)", categoria: "objetos" },
+            "萄": { pinyin: "táo", significado: "Uva (raíz)", categoria: "objetos" },
+            "草": { pinyin: "cǎo", significado: "Pasto / Hierba", categoria: "objetos" },
+            "莓": { pinyin: "méi", significado: "Baya / Fruto del bosque", categoria: "objetos" },
+            "柠": { pinyin: "níng", significado: "Limón (raíz)", categoria: "objetos" },
+            "檬": { pinyin: "méng", significado: "Limón (raíz)", categoria: "objetos" },
+            "蔬": { pinyin: "shū", significado: "Verdura", categoria: "objetos" },
+            "菜": { pinyin: "cài", significado: "Verdura / Plato de comida", categoria: "objetos" },
+            "土": { pinyin: "tǔ", significado: "Tierra", categoria: "objetos" },
+            "豆": { pinyin: "dòu", significado: "Poroto / Legumbre", categoria: "objetos" },
+            "西": { pinyin: "xī", significado: "Oeste", categoria: "objetos" },
+            "红": { pinyin: "hóng", significado: "Rojo", categoria: "objetos" },
+            "柿": { pinyin: "shì", significado: "Caqui / Tomate (raíz)", categoria: "objetos" },
+            "胡": { pinyin: "hú", significado: "Extranjero / Confuso (raíz)", categoria: "objetos" },
+            "萝": { pinyin: "luó", significado: "Zanahoria (raíz)", categoria: "objetos" },
+            "卜": { pinyin: "bo", significado: "Zanahoria (raíz)", categoria: "objetos" },
+            "洋": { pinyin: "yáng", significado: "Océano / Extranjero", categoria: "objetos" },
+            "葱": { pinyin: "cōng", significado: "Cebolla de verdeo", categoria: "objetos" },
+            "蒜": { pinyin: "suàn", significado: "Ajo", categoria: "objetos" },
+            "生": { pinyin: "shēng", significado: "Crudo / Nacer / Vida", categoria: "objetos" },
+            "姜": { pinyin: "jiāng", significado: "Jengibre", categoria: "objetos" },
+            "兰": { pinyin: "lán", significado: "Orquídea (raíz)", categoria: "objetos" },
+            "花": { pinyin: "huā", significado: "Flor", categoria: "objetos" },
+            "蘑": { pinyin: "mó", significado: "Hongo (raíz)", categoria: "objetos" },
+            "菇": { pinyin: "gu", significado: "Hongo (raíz)", categoria: "objetos" },
+            "牛": { pinyin: "niú", significado: "Vaca / Buey", categoria: "objetos" },
+            "肉": { pinyin: "ròu", significado: "Carne", categoria: "objetos" },
+            "鸡": { pinyin: "jī", significado: "Pollo / Gallina", categoria: "objetos" },
+            "猪": { pinyin: "zhū", significado: "Cerdo", categoria: "objetos" },
+            "羊": { pinyin: "yáng", significado: "Oveja / Cordero", categoria: "objetos" },
+            "鱼": { pinyin: "yú", significado: "Pescado / Pez", categoria: "objetos" },
+            "海": { pinyin: "hǎi", significado: "Mar", categoria: "objetos" },
+            "鲜": { pinyin: "xiān", significado: "Fresco / Marisco", categoria: "objetos" },
+            "蛋": { pinyin: "dàn", significado: "Huevo", categoria: "objetos" },
+
+            "奶": { pinyin: "nǎi", significado: "Leche", categoria: "objetos" },
+            "酪": { pinyin: "lào", significado: "Queso (raíz)", categoria: "objetos" },
+            "酸": { pinyin: "suān", significado: "Ácido / Agrio", categoria: "objetos" },
+            "黄": { pinyin: "huáng", significado: "Amarillo", categoria: "objetos" },
+            "油": { pinyin: "yóu", significado: "Aceite", categoria: "objetos" },
+            "面": { pinyin: "miàn", significado: "Harina / Fideo / Cara", categoria: "objetos" },
+            "包": { pinyin: "bāo", significado: "Pan / Bolso / Envolver", categoria: "objetos" },
+            "米": { pinyin: "mǐ", significado: "Arroz (crudo)", categoria: "objetos" },
+            "饭": { pinyin: "fàn", significado: "Comida / Arroz cocido", categoria: "objetos" },
+            "条": { pinyin: "tiáo", significado: "Tira / Fideo (clasificador)", categoria: "objetos" },
+            "盐": { pinyin: "yán", significado: "Sal", categoria: "objetos" },
+            "糖": { pinyin: "táng", significado: "Azúcar / Caramelo", categoria: "objetos" },
+            "椒": { pinyin: "jiāo", significado: "Pimienta / Ají", categoria: "objetos" },
+            "醋": { pinyin: "cù", significado: "Vinagre", categoria: "objetos" },
+            "酱": { pinyin: "jiàng", significado: "Salsa / Pasta condimentada", categoria: "objetos" },
+            "蜂": { pinyin: "fēng", significado: "Abeja", categoria: "objetos" },
+            "蜜": { pinyin: "mì", significado: "Miel", categoria: "objetos" },
+            "巧": { pinyin: "qiǎo", significado: "Hábil / Ingenioso", categoria: "objetos" },
+            "克": { pinyin: "kè", significado: "Gramo / Vencer (raíz)", categoria: "objetos" },
+            "力": { pinyin: "lì", significado: "Fuerza", categoria: "objetos" },
+            "冰": { pinyin: "bīng", significado: "Hielo", categoria: "objetos" },
+            "淇": { pinyin: "qí", significado: "Helado (raíz)", categoria: "objetos" },
+            "淋": { pinyin: "lín", significado: "Helado (raíz) / Mojar", categoria: "objetos" },
+            "饼": { pinyin: "bǐng", significado: "Galleta / Torta plana", categoria: "objetos" },
+            "汤": { pinyin: "tāng", significado: "Sopa", categoria: "objetos" },
+            "治": { pinyin: "zhì", significado: "Gobernar / Curar (raíz)", categoria: "objetos" },
+            "汉": { pinyin: "hàn", significado: "Han (etnia/raíz)", categoria: "objetos" },
+            "堡": { pinyin: "bǎo", significado: "Fortaleza / Hamburguesa (raíz)", categoria: "objetos" },
+            "比": { pinyin: "bǐ", significado: "Comparar", categoria: "objetos" },
+            "萨": { pinyin: "sà", significado: "Pizza (raíz)", categoria: "objetos" },
+            "啤": { pinyin: "pí", significado: "Cerveza (raíz)", categoria: "objetos" },
+
+            "签": { pinyin: "qiān", significado: "Firmar / Etiqueta", categoria: "objetos" },
+            "证": { pinyin: "zhèng", significado: "Certificado / Prueba", categoria: "objetos" },
+            "用": { pinyin: "yòng", significado: "Usar", categoria: "objetos" },
+            "信": { pinyin: "xìn", significado: "Carta / Creer", categoria: "objetos" },
+            "卡": { pinyin: "kǎ", significado: "Tarjeta", categoria: "objetos" },
+            "枕": { pinyin: "zhěn", significado: "Almohada (raíz)", categoria: "objetos" },
+            "毛": { pinyin: "máo", significado: "Pelo / Lana", categoria: "objetos" },
+            "巾": { pinyin: "jīn", significado: "Toalla / Paño", categoria: "objetos" },
+            "窗": { pinyin: "chuāng", significado: "Ventana (raíz)", categoria: "objetos" },
+            "户": { pinyin: "hù", significado: "Puerta / Hogar", categoria: "objetos" },
+            "调": { pinyin: "tiáo", significado: "Ajustar / Mezclar", categoria: "objetos" },
+            "视": { pinyin: "shì", significado: "Ver / Visión", categoria: "objetos" },
+            "话": { pinyin: "huà", significado: "Hablar / Palabra", categoria: "objetos" },
+            "灯": { pinyin: "dēng", significado: "Lámpara / Luz", categoria: "objetos" },
+            "浴": { pinyin: "yù", significado: "Bañarse", categoria: "objetos" },
+            "室": { pinyin: "shì", significado: "Habitación / Cuarto", categoria: "objetos" },
+            "纸": { pinyin: "zhǐ", significado: "Papel", categoria: "objetos" },
+            "卫": { pinyin: "wèi", significado: "Defender / Higiene (raíz)", categoria: "objetos" },
+            "吹": { pinyin: "chuī", significado: "Soplar", categoria: "objetos" },
+            "风": { pinyin: "fēng", significado: "Viento", categoria: "objetos" },
+            "机": { pinyin: "jī", significado: "Máquina", categoria: "objetos" },
+            "梯": { pinyin: "tī", significado: "Escalera (raíz)", categoria: "objetos" },
+            "咖": { pinyin: "kā", significado: "Café (raíz)", categoria: "objetos" },
+            "啡": { pinyin: "fēi", significado: "Café (raíz)", categoria: "objetos" },
+            "厕": { pinyin: "cè", significado: "Baño (raíz)", categoria: "objetos" },
+            "所": { pinyin: "suǒ", significado: "Lugar (sufijo)", categoria: "objetos" },
+            "楼": { pinyin: "lóu", significado: "Edificio / Piso", categoria: "objetos" },
+            "停": { pinyin: "tíng", significado: "Detener / Aparcar", categoria: "objetos" },
+            "场": { pinyin: "chǎng", significado: "Lugar / Cancha", categoria: "objetos" },
+            "李": { pinyin: "lǐ", significado: "Equipaje (raíz) / Ciruela", categoria: "objetos" },
+            "址": { pinyin: "zhǐ", significado: "Dirección / Ubicación", categoria: "objetos" },
+            "脑": { pinyin: "nǎo", significado: "Cerebro", categoria: "objetos" },
+            "衣": { pinyin: "yī", significado: "Ropa", categoria: "objetos" },
+            "鞋": { pinyin: "xié", significado: "Zapato", categoria: "objetos" },
+            "站": { pinyin: "zhàn", significado: "Estación / Parar", categoria: "objetos" },
+            "出": { pinyin: "chū", significado: "Salir", categoria: "objetos" },
+            "租": { pinyin: "zū", significado: "Alquilar", categoria: "objetos" },
+            "车": { pinyin: "chē", significado: "Vehículo / Auto", categoria: "objetos" },
+            "地": { pinyin: "dì", significado: "Tierra / Lugar", categoria: "objetos" },
+            "图": { pinyin: "tú", significado: "Mapa / Imagen", categoria: "objetos" },
+            "书": { pinyin: "shū", significado: "Libro", categoria: "objetos" },
+            "笔": { pinyin: "bǐ", significado: "Lapicera / Pincel", categoria: "objetos" },
+            "桌": { pinyin: "zhuō", significado: "Mesa", categoria: "objetos" },
+            "椅": { pinyin: "yǐ", significado: "Silla", categoria: "objetos" },
+            "发": { pinyin: "fā", significado: "Emitir / Enviar", categoria: "objetos" },
+            "票": { pinyin: "piào", significado: "Boleto / Ticket", categoria: "objetos" },
+
+            "山": { pinyin: "shān", significado: "Montaña", categoria: "objetos" },
+            "雪": { pinyin: "xuě", significado: "Nieve", categoria: "objetos" },
+            "水": { pinyin: "shuǐ", significado: "Agua", categoria: "objetos" },
+            "火": { pinyin: "huǒ", significado: "Fuego", categoria: "objetos" },
+            "云": { pinyin: "yún", significado: "Nube", categoria: "objetos" },
+            "雨": { pinyin: "yǔ", significado: "Lluvia", categoria: "objetos" },
+            "阳": { pinyin: "yáng", significado: "Sol / Yang (luz)", categoria: "objetos" },
+            "月": { pinyin: "yuè", significado: "Luna / Mes", categoria: "objetos" },
+            "河": { pinyin: "hé", significado: "Río", categoria: "objetos" },
+            "森": { pinyin: "sēn", significado: "Bosque (raíz)", categoria: "objetos" },
+            "林": { pinyin: "lín", significado: "Bosque / Arboleda", categoria: "objetos" },
+            "树": { pinyin: "shù", significado: "Árbol", categoria: "objetos" },
+            "狗": { pinyin: "gǒu", significado: "Perro", categoria: "objetos" },
+            "猫": { pinyin: "māo", significado: "Gato", categoria: "objetos" },
+            "鸟": { pinyin: "niǎo", significado: "Pájaro", categoria: "objetos" },
+            "马": { pinyin: "mǎ", significado: "Caballo", categoria: "objetos" },
+            "孩": { pinyin: "hái", significado: "Niño / Hijo (raíz)", categoria: "objetos" },
+            "婴": { pinyin: "yīng", significado: "Bebé (raíz)", categoria: "objetos" },
+            "儿": { pinyin: "ér", significado: "Hijo / Sufijo diminutivo", categoria: "objetos" },
+
+            "玩": { pinyin: "wán", significado: "Jugar", categoria: "objetos" },
+            "具": { pinyin: "jù", significado: "Herramienta / Utensilio", categoria: "objetos" },
+            "尿": { pinyin: "niào", significado: "Orina / Pañal (raíz)", categoria: "objetos" },
+            "布": { pinyin: "bù", significado: "Tela / Paño", categoria: "objetos" },
+            "推": { pinyin: "tuī", significado: "Empujar", categoria: "objetos" },
+            "筷": { pinyin: "kuài", significado: "Palillo (raíz)", categoria: "objetos" },
+            "碗": { pinyin: "wǎn", significado: "Bol / Cuenco", categoria: "objetos" },
+            "盘": { pinyin: "pán", significado: "Plato / Bandeja", categoria: "objetos" },
+            "杯": { pinyin: "bēi", significado: "Vaso / Taza", categoria: "objetos" },
+            "刀": { pinyin: "dāo", significado: "Cuchillo", categoria: "objetos" },
+            "叉": { pinyin: "chā", significado: "Tenedor / Bifurcación", categoria: "objetos" },
+            "勺": { pinyin: "sháo", significado: "Cuchara", categoria: "objetos" },
+            "袋": { pinyin: "dài", significado: "Bolsa", categoria: "objetos" },
+            "箱": { pinyin: "xiāng", significado: "Caja / Cajón", categoria: "objetos" },
+            "镜": { pinyin: "jìng", significado: "Espejo / Lente", categoria: "objetos" },
+            "牙": { pinyin: "yá", significado: "Diente", categoria: "objetos" },
+            "刷": { pinyin: "shuā", significado: "Cepillo / Cepillar", categoria: "objetos" },
+            "伞": { pinyin: "sǎn", significado: "Paraguas", categoria: "objetos" },
+            "钱": { pinyin: "qián", significado: "Dinero", categoria: "objetos" },
+            "眼": { pinyin: "yǎn", significado: "Ojo", categoria: "objetos" },
+            "表": { pinyin: "biǎo", significado: "Reloj / Tabla", categoria: "objetos" },
+            "池": { pinyin: "chí", significado: "Estanque / Pila (eléctrica)", categoria: "objetos" },
+            "充": { pinyin: "chōng", significado: "Llenar / Cargar", categoria: "objetos" },
+            "器": { pinyin: "qì", significado: "Utensilio / Aparato", categoria: "objetos" },
+            "圾": { pinyin: "jī", significado: "Basura (raíz)", categoria: "objetos" },
+            "垃": { pinyin: "lā", significado: "Basura (raíz)", categoria: "objetos" },
+            "桶": { pinyin: "tǒng", significado: "Balde / Tacho", categoria: "objetos" },
+            "药": { pinyin: "yào", significado: "Medicina", categoria: "objetos" },
+            "丽": { pinyin: "lì", significado: "Hermoso (raíz)", categoria: "objetos" },
+            "务": { pinyin: "wù", significado: "Servicio / Tarea", categoria: "objetos" },
+            "名": { pinyin: "míng", significado: "Nombre", categoria: "objetos" },
+            "员": { pinyin: "yuán", significado: "Miembro / Empleado", categoria: "objetos" },
+            "头": { pinyin: "tóu", significado: "Cabeza", categoria: "objetos" },
+            "子": { pinyin: "zi", significado: "Sufijo de sustantivo", categoria: "objetos" },
+            "字": { pinyin: "zì", significado: "Carácter / Letra", categoria: "objetos" },
+            "床": { pinyin: "chuáng", significado: "Cama", categoria: "objetos" },
+            "气": { pinyin: "qì", significado: "Aire / Energía", categoria: "objetos" },
+            "电": { pinyin: "diàn", significado: "Electricidad", categoria: "objetos" },
+            "空": { pinyin: "kōng", significado: "Vacío / Aire", categoria: "objetos" },
+            "行": { pinyin: "xíng", significado: "Caminar / Viajar", categoria: "objetos" },
+            "门": { pinyin: "mén", significado: "Puerta", categoria: "objetos" },
+
+            "敢": { pinyin: "gǎn", significado: "Atreverse", categoria: "auxiliares" },
+            "爱": { pinyin: "ài", significado: "Amar", categoria: "auxiliares" },
+            "帮": { pinyin: "bāng", significado: "Ayudar", categoria: "auxiliares" },
+            "该": { pinyin: "gāi", significado: "Deber (raíz)", categoria: "auxiliares" },
+            "应": { pinyin: "yīng", significado: "Deber / Responder (raíz)", categoria: "auxiliares" },
+            "决": { pinyin: "jué", significado: "Decidir (raíz)", categoria: "auxiliares" },
+            "定": { pinyin: "dìng", significado: "Fijar / Decidir (raíz)", categoria: "auxiliares" },
+            "打": { pinyin: "dǎ", significado: "Golpear / Hacer (raíz)", categoria: "auxiliares" },
+            "算": { pinyin: "suàn", significado: "Calcular / Planear (raíz)", categoria: "auxiliares" },
+            "希": { pinyin: "xī", significado: "Esperar (raíz)", categoria: "auxiliares" },
+            "望": { pinyin: "wàng", significado: "Esperar / Mirar a lo lejos", categoria: "auxiliares" },
+            "愿": { pinyin: "yuàn", significado: "Estar dispuesto / Desear", categoria: "auxiliares" },
+            "意": { pinyin: "yì", significado: "Intención / Significado", categoria: "auxiliares" },
+            "正": { pinyin: "zhèng", significado: "Justo / Correcto", categoria: "auxiliares" },
+            "喜": { pinyin: "xǐ", significado: "Alegría (raíz)", categoria: "auxiliares" },
+            "欢": { pinyin: "huān", significado: "Alegre / Gustar (raíz)", categoria: "auxiliares" },
+            "继": { pinyin: "jì", significado: "Continuar (raíz)", categoria: "auxiliares" },
+            "续": { pinyin: "xù", significado: "Continuar (raíz)", categoria: "auxiliares" },
+            "结": { pinyin: "jié", significado: "Atar / Terminar (raíz)", categoria: "auxiliares" },
+            "束": { pinyin: "shù", significado: "Terminar / Atado (raíz)", categoria: "auxiliares" },
+            "开": { pinyin: "kāi", significado: "Abrir / Empezar", categoria: "auxiliares" },
+            "始": { pinyin: "shǐ", significado: "Empezar (raíz)", categoria: "auxiliares" },
+            "尝": { pinyin: "cháng", significado: "Probar / Saborear", categoria: "auxiliares" },
+            "试": { pinyin: "shì", significado: "Intentar / Probar", categoria: "auxiliares" },
+            "须": { pinyin: "xū", significado: "Necesitar (raíz)", categoria: "auxiliares" },
+            "止": { pinyin: "zhǐ", significado: "Detener / Parar (raíz)", categoria: "auxiliares" },
+            "着": { pinyin: "zhe", significado: "(Partícula de estado continuo)", categoria: "auxiliares" },
+
+            "且": { pinyin: "qiě", significado: "Además (raíz)", categoria: "conectores" },
+            "为": { pinyin: "wèi", significado: "Para / Por", categoria: "conectores" },
+            "之": { pinyin: "zhī", significado: "Partícula clásica posesiva", categoria: "conectores" },
+            "于": { pinyin: "yú", significado: "En / A (formal)", categoria: "conectores" },
+            "以": { pinyin: "yǐ", significado: "Con / Para (raíz)", categoria: "conectores" },
+            "但": { pinyin: "dàn", significado: "Pero (raíz)", categoria: "conectores" },
+            "如": { pinyin: "rú", significado: "Como / Tal cual", categoria: "conectores" },
+            "或": { pinyin: "huò", significado: "O / Quizás", categoria: "conectores" },
+            "者": { pinyin: "zhě", significado: "Persona que... (sufijo)", categoria: "conectores" },
+            "因": { pinyin: "yīn", significado: "Causa / Porque (raíz)", categoria: "conectores" },
+            "总": { pinyin: "zǒng", significado: "Total / Siempre (raíz)", categoria: "conectores" },
+            "既": { pinyin: "jì", significado: "Ya que (raíz)", categoria: "conectores" },
+            "怕": { pinyin: "pà", significado: "Temer / Tener miedo", categoria: "conectores" },
+            "由": { pinyin: "yóu", significado: "Desde / Debido a (raíz)", categoria: "conectores" },
+            "而": { pinyin: "ér", significado: "Y / Pero (formal)", categoria: "conectores" },
+            "虽": { pinyin: "suī", significado: "Aunque (raíz)", categoria: "conectores" },
+            "说": { pinyin: "shuō", significado: "Decir / Hablar", categoria: "conectores" },
+            "即": { pinyin: "jí", significado: "Es decir / Inmediato", categoria: "conectores" },
+
+            "些": { pinyin: "xiē", significado: "Algunos (sufijo plural)", categoria: "clasificadores" },
+            "久": { pinyin: "jiǔ", significado: "Largo tiempo", categoria: "clasificadores" },
+            "么": { pinyin: "me", significado: "Partícula interrogativa (sufijo)", categoria: "clasificadores" },
+            "件": { pinyin: "jiàn", significado: "Pieza / Asunto (clasificador)", categoria: "clasificadores" },
+            "份": { pinyin: "fèn", significado: "Porción / Parte", categoria: "clasificadores" },
+            "位": { pinyin: "wèi", significado: "Persona (clasificador formal)", categoria: "clasificadores" },
+            "候": { pinyin: "hòu", significado: "Tiempo / Momento (raíz)", categoria: "clasificadores" },
+            "岁": { pinyin: "suì", significado: "Años de edad", categoria: "clasificadores" },
+            "块": { pinyin: "kuài", significado: "Trozo / Moneda", categoria: "clasificadores" },
+            "度": { pinyin: "dù", significado: "Grado (temperatura)", categoria: "clasificadores" },
+            "张": { pinyin: "zhāng", significado: "Objeto plano (clasificador)", categoria: "clasificadores" },
+            "怎": { pinyin: "zěn", significado: "Cómo (raíz)", categoria: "clasificadores" },
+            "把": { pinyin: "bǎ", significado: "Objeto con mango (clasificador)", categoria: "clasificadores" },
+            "支": { pinyin: "zhī", significado: "Objeto alargado (clasificador)", categoria: "clasificadores" },
+            "本": { pinyin: "běn", significado: "Libro (clasificador)", categoria: "clasificadores" },
+            "次": { pinyin: "cì", significado: "Vez (frecuencia)", categoria: "clasificadores" },
+            "点": { pinyin: "diǎn", significado: "Punto / Un poco", categoria: "clasificadores" },
+            "瓶": { pinyin: "píng", significado: "Botella (clasificador)", categoria: "clasificadores" },
+            "辆": { pinyin: "liàng", significado: "Vehículo (clasificador)", categoria: "clasificadores" },
+            "双": { pinyin: "shuāng", significado: "Par (clasificador)", categoria: "clasificadores" },
+            "口": { pinyin: "kǒu", significado: "Boca / Miembro de familia", categoria: "clasificadores" },
+
+            "样": { pinyin: "yàng", significado: "Tipo / Manera", categoria: "preguntas" },
+            "哪": { pinyin: "nǎ", significado: "Cuál", categoria: "preguntas" },
+            "呢": { pinyin: "ne", significado: "Partícula de pregunta retórica", categoria: "preguntas" },
+            "和": { pinyin: "hé", significado: "Y (conector)", categoria: "preguntas" },
+            "走": { pinyin: "zǒu", significado: "Caminar / Ir", categoria: "preguntas" },
+            "谁": { pinyin: "shéi", significado: "Quién", categoria: "preguntas" },
+            "长": { pinyin: "cháng", significado: "Largo", categoria: "preguntas" },
+            "时": { pinyin: "shí", significado: "Tiempo / Hora", categoria: "preguntas" },
+            "起": { pinyin: "qǐ", significado: "Levantarse / Empezar (raíz)", categoria: "preguntas" },
+            "较": { pinyin: "jiào", significado: "Comparar (raíz)", categoria: "preguntas" },
+
+            "刚": { pinyin: "gāng", significado: "Recién / Acabo de", categoria: "adverbios" },
+            "就": { pinyin: "jiù", significado: "Enseguida / Entonces", categoria: "adverbios" },
+            "还": { pinyin: "hái", significado: "Todavía / Además", categoria: "adverbios" },
+            "都": { pinyin: "dōu", significado: "Todos / Ambos", categoria: "adverbios" },
+            "非": { pinyin: "fēi", significado: "No / Anti (raíz)", categoria: "adverbios" },
+            "已": { pinyin: "yǐ", significado: "Ya (raíz)", categoria: "adverbios" },
+            "再": { pinyin: "zài", significado: "Otra vez / De nuevo", categoria: "adverbios" },
+            "没": { pinyin: "méi", significado: "No (pasado/posesión)", categoria: "adverbios" },
+            "最": { pinyin: "zuì", significado: "El más (superlativo)", categoria: "adverbios" },
+            "常": { pinyin: "cháng", significado: "Frecuente / A menudo", categoria: "adverbios" },
+            "能": { pinyin: "néng", significado: "Poder (capacidad)", categoria: "adverbios" },
+            "可": { pinyin: "kě", significado: "Poder / Permitir (raíz)", categoria: "adverbios" },
+
+            "个": { pinyin: "gè", significado: "Clasificador general", categoria: "clasificadores" },
+            "只": { pinyin: "zhī", significado: "Animal pequeño (clasificador)", categoria: "clasificadores" },
+            "几": { pinyin: "jǐ", significado: "Cuántos (números < 10)", categoria: "preguntas" },
+            "什": { pinyin: "shén", significado: "Qué (raíz)", categoria: "preguntas" },
+            "有": { pinyin: "yǒu", significado: "Tener / Haber", categoria: "preguntas" },
+            "也": { pinyin: "yě", significado: "También", categoria: "adverbios" },
+            "了": { pinyin: "le", significado: "Partícula de acción terminada o cambio", categoria: "auxiliares" },
+            "会": { pinyin: "huì", significado: "Saber / Poder (habilidad)", categoria: "auxiliares" },
+            "准": { pinyin: "zhǔn", significado: "Preparar (raíz) / Exacto", categoria: "auxiliares" },
+            "备": { pinyin: "bèi", significado: "Preparar (raíz)", categoria: "auxiliares" },
+            "请": { pinyin: "qǐng", significado: "Por favor / Invitar", categoria: "auxiliares" },
+            "必": { pinyin: "bì", significado: "Necesariamente (raíz)", categoria: "auxiliares" },
+            "后": { pinyin: "hòu", significado: "Después / Detrás", categoria: "adverbios" },
+            "当": { pinyin: "dāng", significado: "Cuando / Actuar como (raíz)", categoria: "adverbios" },
+            "是": { pinyin: "shì", significado: "Ser / Sí", categoria: "adverbios" },
+            "然": { pinyin: "rán", significado: "Así / Entonces (raíz)", categoria: "conectores" },
+            "真": { pinyin: "zhēn", significado: "Realmente / De verdad", categoria: "adverbios" },
+
+            "下": { pinyin: "xià", significado: "Abajo / Bajar", categoria: "lugares" },
+            "中": { pinyin: "zhōng", significado: "Medio / Centro", categoria: "lugares" },
+            "心": { pinyin: "xīn", significado: "Corazón / Centro", categoria: "lugares" },
+            "外": { pinyin: "wài", significado: "Fuera / Externo", categoria: "lugares" },
+            "左": { pinyin: "zuǒ", significado: "Izquierda", categoria: "lugares" },
+            "右": { pinyin: "yòu", significado: "Derecha", categoria: "lugares" },
+            "边": { pinyin: "biān", significado: "Lado / Borde", categoria: "lugares" },
+            "旁": { pinyin: "páng", significado: "Al lado de (raíz)", categoria: "lugares" },
+            "附": { pinyin: "fù", significado: "Adjunto / Cercano (raíz)", categoria: "lugares" },
+            "市": { pinyin: "shì", significado: "Ciudad", categoria: "lugares" },
+            "购": { pinyin: "gòu", significado: "Comprar (raíz formal)", categoria: "lugares" },
+            "物": { pinyin: "wù", significado: "Cosa / Objeto", categoria: "lugares" },
+            "厨": { pinyin: "chú", significado: "Cocina (raíz)", categoria: "lugares" },
+            "警": { pinyin: "jǐng", significado: "Policía (raíz)", categoria: "lugares" },
+            "察": { pinyin: "chá", significado: "Observar / Policía (raíz)", categoria: "lugares" },
+            "局": { pinyin: "jú", significado: "Oficina / Departamento", categoria: "lugares" },
+            "廊": { pinyin: "láng", significado: "Pasillo / Corredor", categoria: "lugares" },
+            "广": { pinyin: "guǎng", significado: "Amplio / Vasto", categoria: "lugares" },
+            "健": { pinyin: "jiàn", significado: "Sano / Fuerte", categoria: "lugares" },
+            "身": { pinyin: "shēn", significado: "Cuerpo", categoria: "lugares" },
+            "游": { pinyin: "yóu", significado: "Nadar / Pasear (raíz)", categoria: "lugares" },
+            "泳": { pinyin: "yǒng", significado: "Nadar (raíz)", categoria: "lugares" },
+            "公": { pinyin: "gōng", significado: "Público", categoria: "lugares" },
+            "园": { pinyin: "yuán", significado: "Jardín / Parque", categoria: "lugares" },
+            "博": { pinyin: "bó", significado: "Amplio / Erudito (raíz)", categoria: "lugares" },
+            "馆": { pinyin: "guǎn", significado: "Edificio / Salón", categoria: "lugares" },
+            "医": { pinyin: "yī", significado: "Medicina / Médico", categoria: "lugares" },
+            "院": { pinyin: "yuàn", significado: "Patio / Institución", categoria: "lugares" },
+            "超": { pinyin: "chāo", significado: "Superar / Súper (raíz)", categoria: "lugares" },
+            "银": { pinyin: "yín", significado: "Plata", categoria: "lugares" },
+            "吧": { pinyin: "ba", significado: "Bar / Partícula sugestiva", categoria: "lugares" },
+            "那": { pinyin: "nà", significado: "Ese / Aquel", categoria: "lugares" },
+            "铁": { pinyin: "tiě", significado: "Hierro / Metro (raíz)", categoria: "lugares" },
+            "方": { pinyin: "fāng", significado: "Dirección / Cuadrado", categoria: "lugares" },
+
+            "关": { pinyin: "guān", significado: "Cerrar / Apagar", categoria: "verbos" },
+            "去": { pinyin: "qù", significado: "Ir", categoria: "verbos" },
+            "来": { pinyin: "lái", significado: "Venir", categoria: "verbos" },
+            "听": { pinyin: "tīng", significado: "Escuchar", categoria: "verbos" },
+            "写": { pinyin: "xiě", significado: "Escribir", categoria: "verbos" },
+            "吃": { pinyin: "chī", significado: "Comer", categoria: "verbos" },
+            "喝": { pinyin: "hē", significado: "Beber", categoria: "verbos" },
+            "给": { pinyin: "gěi", significado: "Dar", categoria: "verbos" },
+            "叫": { pinyin: "jiào", significado: "Llamar", categoria: "verbos" },
+            "做": { pinyin: "zuò", significado: "Hacer", categoria: "verbos" },
+            "买": { pinyin: "mǎi", significado: "Comprar", categoria: "verbos" },
+            "坐": { pinyin: "zuò", significado: "Sentarse", categoria: "verbos" },
+            "退": { pinyin: "tuì", significado: "Retirarse / Devolver", categoria: "verbos" },
+            "助": { pinyin: "zhù", significado: "Ayudar (raíz)", categoria: "verbos" },
+            "找": { pinyin: "zhǎo", significado: "Buscar", categoria: "verbos" },
+            "换": { pinyin: "huàn", significado: "Cambiar", categoria: "verbos" },
+            "等": { pinyin: "děng", significado: "Esperar", categoria: "verbos" },
+            "问": { pinyin: "wèn", significado: "Preguntar", categoria: "verbos" },
+            "拿": { pinyin: "ná", significado: "Tomar / Agarrar", categoria: "verbos" },
+            "放": { pinyin: "fàng", significado: "Poner / Dejar", categoria: "verbos" },
+            "付": { pinyin: "fù", significado: "Pagar (raíz)", categoria: "verbos" },
+            "需": { pinyin: "xū", significado: "Necesitar (raíz)", categoria: "verbos" },
+            "登": { pinyin: "dēng", significado: "Subir / Registrar (raíz)", categoria: "verbos" },
+            "记": { pinyin: "jì", significado: "Recordar / Anotar", categoria: "verbos" },
+            "修": { pinyin: "xiū", significado: "Reparar (raíz)", categoria: "verbos" },
+            "预": { pinyin: "yù", significado: "Anticipar / Pre- (raíz)", categoria: "verbos" },
+            "订": { pinyin: "dìng", significado: "Reservar / Pedir (raíz)", categoria: "verbos" },
+            "知": { pinyin: "zhī", significado: "Saber (raíz)", categoria: "verbos" },
+            "道": { pinyin: "dào", significado: "Camino / Decir (raíz)", categoria: "verbos" },
+            "进": { pinyin: "jìn", significado: "Entrar / Avanzar", categoria: "verbos" },
+            "懂": { pinyin: "dǒng", significado: "Entender", categoria: "verbos" },
+            "扫": { pinyin: "sǎo", significado: "Barrer / Limpiar (raíz)", categoria: "verbos" },
+            "休": { pinyin: "xiū", significado: "Descansar (raíz)", categoria: "verbos" },
+            "息": { pinyin: "xī", significado: "Descansar / Respiración (raíz)", categoria: "verbos" },
+
+            "十": { pinyin: "shí", significado: "Diez", categoria: "tiempos" },
+            "半": { pinyin: "bàn", significado: "Mitad / Medio", categoria: "tiempos" },
+            "刻": { pinyin: "kè", significado: "Cuarto de hora / Tallar", categoria: "tiempos" },
+            "分": { pinyin: "fēn", significado: "Minuto / Dividir", categoria: "tiempos" },
+            "秒": { pinyin: "miǎo", significado: "Segundo", categoria: "tiempos" },
+            "午": { pinyin: "wǔ", significado: "Mediodía (raíz)", categoria: "tiempos" },
+            "星": { pinyin: "xīng", significado: "Estrella", categoria: "tiempos" },
+            "期": { pinyin: "qī", significado: "Período / Plazo", categoria: "tiempos" },
+            "号": { pinyin: "hào", significado: "Número / Día del mes", categoria: "tiempos" },
+            "年": { pinyin: "nián", significado: "Año", categoria: "tiempos" },
+            "从": { pinyin: "cóng", significado: "Desde", categoria: "tiempos" },
+
+            "谢": { pinyin: "xiè", significado: "Agradecer", categoria: "auxiliares" },
+            "的": { pinyin: "de", significado: "Partícula posesiva / conectora", categoria: "conectores" },
+            "百": { pinyin: "bǎi", significado: "Cien", categoria: "numeros" },
+            "千": { pinyin: "qiān", significado: "Mil", categoria: "numeros" },
+
+            "朋": { pinyin: "péng", significado: "Amigo (raíz)", categoria: "personas" },
+            "老": { pinyin: "lǎo", significado: "Viejo / Anciano (raíz)", categoria: "personas" },
+            "保": { pinyin: "bǎo", significado: "Proteger (raíz)", categoria: "personas" },
+            "司": { pinyin: "sī", significado: "Administrar / Conducir (raíz)", categoria: "personas" },
+            "同": { pinyin: "tóng", significado: "Mismo / Junto", categoria: "personas" },
+            "事": { pinyin: "shì", significado: "Asunto / Trabajo", categoria: "personas" },
+            "它": { pinyin: "tā", significado: "Ello (objetos/animales)", categoria: "personas" },
+            "工": { pinyin: "gōng", significado: "Trabajo", categoria: "personas" },
+            "妻": { pinyin: "qī", significado: "Esposa (raíz)", categoria: "personas" },
+            "丈": { pinyin: "zhàng", significado: "Esposo (raíz)", categoria: "personas" },
+            "夫": { pinyin: "fū", significado: "Esposo / Hombre adulto", categoria: "personas" },
+            "家": { pinyin: "jiā", significado: "Familia / Hogar", categoria: "personas" },
+            "导": { pinyin: "dǎo", significado: "Guiar", categoria: "personas" },
+            "姐": { pinyin: "jiě", significado: "Hermana mayor (raíz)", categoria: "personas" },
+            "妹": { pinyin: "mèi", significado: "Hermana menor (raíz)", categoria: "personas" },
+            "哥": { pinyin: "gē", significado: "Hermano mayor (raíz)", categoria: "personas" },
+            "弟": { pinyin: "dì", significado: "Hermano menor (raíz)", categoria: "personas" },
+            "男": { pinyin: "nán", significado: "Hombre / Masculino", categoria: "personas" },
+            "妈": { pinyin: "mā", significado: "Mamá (raíz)", categoria: "personas" },
+            "爸": { pinyin: "bà", significado: "Papá (raíz)", categoria: "personas" },
+            "自": { pinyin: "zì", significado: "Mismo / Uno mismo (raíz)", categoria: "personas" },
+            "己": { pinyin: "jǐ", significado: "Mismo / Sí mismo (raíz)", categoria: "personas" },
+            "负": { pinyin: "fù", significado: "Cargar / Responsabilizarse", categoria: "personas" },
+            "责": { pinyin: "zé", significado: "Responsabilidad", categoria: "personas" },
+            "清": { pinyin: "qīng", significado: "Limpio / Claro", categoria: "personas" },
+            "师": { pinyin: "shī", significado: "Maestro / Experto", categoria: "personas" },
+            "接": { pinyin: "jiē", significado: "Recibir / Conectar", categoria: "personas" },
+            "待": { pinyin: "dài", significado: "Esperar / Tratar", categoria: "personas" },
+            "先": { pinyin: "xiān", significado: "Primero / Antes", categoria: "personas" },
+            "士": { pinyin: "shì", significado: "Caballero / Persona instruida", categoria: "personas" },
+            "女": { pinyin: "nǚ", significado: "Mujer / Femenino", categoria: "personas" },
+            "旅": { pinyin: "lǚ", significado: "Viajar (raíz)", categoria: "personas" },
+            "持": { pinyin: "chí", significado: "Sostener / Mantener", categoria: "personas" },
+            "板": { pinyin: "bǎn", significado: "Tabla / Jefe (raíz)", categoria: "personas" },
+
+            "肚": { pinyin: "dù", significado: "Panza / Estómago", categoria: "objetos" },
+            "喉": { pinyin: "hóu", significado: "Garganta (raíz)", categoria: "objetos" },
+            "咙": { pinyin: "lóng", significado: "Garganta (raíz)", categoria: "objetos" },
+            "背": { pinyin: "bèi", significado: "Espalda", categoria: "objetos" },
+            "腿": { pinyin: "tuǐ", significado: "Pierna", categoria: "objetos" },
+            "脚": { pinyin: "jiǎo", significado: "Pie", categoria: "objetos" },
+            "臂": { pinyin: "bì", significado: "Brazo (raíz)", categoria: "objetos" },
+            "睛": { pinyin: "jīng", significado: "Ojo (raíz)", categoria: "objetos" },
+            "耳": { pinyin: "ěr", significado: "Oído / Oreja", categoria: "objetos" },
+            "朵": { pinyin: "duo", significado: "Oreja (raíz) / Flor (clasificador)", categoria: "objetos" },
+            "鼻": { pinyin: "bí", significado: "Nariz", categoria: "objetos" },
+            "嘴": { pinyin: "zuǐ", significado: "Boca", categoria: "objetos" },
+            "皮": { pinyin: "pí", significado: "Piel / Cuero", categoria: "objetos" },
+            "肤": { pinyin: "fū", significado: "Piel (raíz)", categoria: "objetos" },
+            "血": { pinyin: "xiě", significado: "Sangre", categoria: "objetos" },
+            "骨": { pinyin: "gǔ", significado: "Hueso", categoria: "objetos" },
+            "痛": { pinyin: "tòng", significado: "Dolor", categoria: "adjetivos" },
+            "辣": { pinyin: "là", significado: "Picante / Ardor", categoria: "adjetivos" },
+            "痒": { pinyin: "yǎng", significado: "Picazón", categoria: "adjetivos" },
+            "烧": { pinyin: "shāo", significado: "Quemar / Fiebre (raíz)", categoria: "objetos" },
+            "晕": { pinyin: "yūn", significado: "Mareo / Aturdido", categoria: "objetos" },
+            "敏": { pinyin: "mǐn", significado: "Sensible (raíz)", categoria: "objetos" },
+            "肿": { pinyin: "zhǒng", significado: "Hinchado", categoria: "adjetivos" },
+            "伤": { pinyin: "shāng", significado: "Herida / Lastimar", categoria: "objetos" },
+            "咳": { pinyin: "ké", significado: "Tos (raíz)", categoria: "objetos" },
+            "嗽": { pinyin: "sou", significado: "Tos (raíz)", categoria: "objetos" },
+            "见": { pinyin: "jiàn", significado: "Ver / Encontrarse", categoria: "auxiliares" },
+            "迎": { pinyin: "yíng", significado: "Recibir / Dar la bienvenida", categoria: "auxiliares" },
+            "思": { pinyin: "sī", significado: "Pensar / Significado (raíz)", categoria: "auxiliares" },
+            "系": { pinyin: "xì", significado: "Relación / Sistema (raíz)", categoria: "auxiliares" },
+        };
+
+        let bloquesActivos = [];
+        let contadorId = 0;
+        let idBloqueEnEdicion = null;
+
+        const workspaceArea = document.getElementById('workspace-area');
+        const flatMenuArea = document.getElementById('flat-menu-area');
+        const componentsDisplayArea = document.getElementById('components-display-area');
+        const focusContainer = document.getElementById('focus-container');
+
+        function crearBotonCategoria(cat) {
+            const btn = document.createElement('button');
+            btn.className = 'add-block-btn';
+            btn.style.backgroundColor = cat.bg;
+            btn.style.color = cat.text;
+            btn.style.borderColor = cat.text;
+            btn.innerHTML = `<span>${cat.icono}</span> <span style="color:${cat.text}">${cat.nombre}</span>`;
+            btn.onclick = () => añadirBloqueAlEscritorio(cat.id);
+            return btn;
+        }
+
+        function inicializarBotoneras() {
+            const contenedorBasicos = document.getElementById('botones-basicos');
+            const contenedorExtras = document.getElementById('botones-extras');
+
+            contenedorBasicos.style.flex = categoriasBasicas.length;
+            contenedorExtras.style.flex = categoriasExtras.length;
+
+            categoriasBasicas.forEach((cat) => {
+                contenedorBasicos.appendChild(crearBotonCategoria(cat));
+            });
+
+            categoriasExtras.forEach((cat) => {
+                contenedorExtras.appendChild(crearBotonCategoria(cat));
+            });
+
+            actualizarVistasVacias();
+        }
+
+        function añadirBloqueAlEscritorio(categoriaId) {
+            const catConfig = todasLasCategorias.find(c => c.id === categoriaId);
+            const nuevoBloque = {
+                id: contadorId++,
+                categoriaId: categoriaId,
+                config: catConfig,
+                valorSeleccionado: ""
+            };
+
+            if (idBloqueEnEdicion !== null) {
+                const index = bloquesActivos.findIndex(b => b.id === idBloqueEnEdicion);
+                bloquesActivos.splice(index + 1, 0, nuevoBloque);
+            } else {
+                bloquesActivos.push(nuevoBloque);
+            }
+
+            idBloqueEnEdicion = nuevoBloque.id;
+            renderizarTodo();
+        }
+
+        function seleccionarFicha(idUnico) {
+            idBloqueEnEdicion = idUnico;
+            renderizarTodo();
+        }
+
+        function vaciarBloqueActual() {
+            if (idBloqueEnEdicion === null) return;
+            const bloque = bloquesActivos.find(b => b.id === idBloqueEnEdicion);
+            if (bloque) {
+                bloque.valorSeleccionado = "";
+                renderizarTodo();
+            }
+        }
+
+        function borrarBloqueActual() {
+            if (idBloqueEnEdicion === null) return;
+            const index = bloquesActivos.findIndex(b => b.id === idBloqueEnEdicion);
+            if (index !== -1) {
+                bloquesActivos.splice(index, 1);
+                idBloqueEnEdicion = bloquesActivos.length > 0 ? bloquesActivos[Math.max(0, index - 1)].id : null;
+                renderizarTodo();
+            }
+        }
+
+        function borrarTodoElEscritorio() {
+            bloquesActivos = [];
+            idBloqueEnEdicion = null;
+            renderizarTodo();
+        }
+
+        function renderizarWorkspace() {
+            workspaceArea.innerHTML = "";
+            bloquesActivos.forEach((bloque) => {
+                const cat = bloque.config;
+                const cell = document.createElement('div');
+                cell.className = `dynamic-cell ${idBloqueEnEdicion === bloque.id ? 'editing' : ''}`;
+                cell.style.backgroundColor = cat.bg;
+                cell.style.color = cat.text;
+                cell.onclick = () => seleccionarFicha(bloque.id);
+
+                const label = document.createElement('span');
+                label.className = 'cell-label';
+                label.innerText = cat.nombre;
+                cell.appendChild(label);
+
+                const displayArea = document.createElement('div');
+                displayArea.className = 'token-display';
+
+                const opcionesList = vocabulario[cat.id] || [];
+                if (bloque.valorSeleccionado !== "") {
+                    const itemData = opcionesList[bloque.valorSeleccionado];
+                    displayArea.innerHTML = `
+                        <span class="token-pinyin">${itemData.pinyin}</span>
+                        <span class="token-hanzi">${itemData.hanzi}</span>
+                    `;
+                } else {
+                    displayArea.innerHTML = `<span class="token-empty" style="color: ${cat.text}">?</span>`;
+                }
+                cell.appendChild(displayArea);
+                workspaceArea.appendChild(cell);
+            });
+        }
+
+        // --- SISTEMA DE FICHAS FRECUENTES (aprende del uso real, persiste en el iPad) ---
+        const CLAVE_FRECUENTES = 'bloquesChino_frecuencias';
+        const MAX_FRECUENTES_MOSTRADAS = 6;
+
+        function cargarFrecuencias() {
+            try {
+                const guardado = localStorage.getItem(CLAVE_FRECUENTES);
+                return guardado ? JSON.parse(guardado) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function guardarFrecuencias(frecuencias) {
+            try {
+                localStorage.setItem(CLAVE_FRECUENTES, JSON.stringify(frecuencias));
+            } catch (e) {
+                // sin localStorage disponible, el conteo no persiste pero la app sigue funcionando
+            }
+        }
+
+        function registrarUsoFrecuente(categoriaId, hanzi) {
+            const frecuencias = cargarFrecuencias();
+            if (!frecuencias[categoriaId]) {
+                frecuencias[categoriaId] = {};
+            }
+            frecuencias[categoriaId][hanzi] = (frecuencias[categoriaId][hanzi] || 0) + 1;
+            guardarFrecuencias(frecuencias);
+        }
+
+        function obtenerTopFrecuentes(categoriaId, opcionesDisponibles) {
+            const frecuencias = cargarFrecuencias();
+            const conteosCategoria = frecuencias[categoriaId] || {};
+
+            const opcionesConConteo = opcionesDisponibles
+                .map(item => ({ item, conteo: conteosCategoria[item.hanzi] || 0 }))
+                .filter(entry => entry.conteo > 0)
+                .sort((a, b) => b.conteo - a.conteo)
+                .slice(0, MAX_FRECUENTES_MOSTRADAS)
+                .map(entry => entry.item);
+
+            return opcionesConConteo;
+        }
+
+        function acortarSignificadoSiEsLargo(esp) {
+            // Caso especial: significados largos tipo "¿? (Transforma a pregunta)" se acortan al símbolo principal
+            const match = esp.match(/^(¿?\?)/);
+            if (match && esp.length > 12) {
+                return match[1];
+            }
+            return esp;
+        }
+
+        function renderizarFrecuentes(bloque, opciones) {
+            const contenedor = document.getElementById('frecuentes-area');
+            if (!contenedor) return;
+
+            const tituloHTML = '<div class="components-title">Frecuentes</div>';
+
+            if (!bloque) {
+                contenedor.innerHTML = tituloHTML + '<div class="frecuente-vacio">Elegí palabras para que aparezcan acá tus más usadas...</div>';
+                return;
+            }
+
+            const cat = bloque.config;
+            const topItems = obtenerTopFrecuentes(bloque.categoriaId, opciones);
+
+            if (topItems.length === 0) {
+                contenedor.innerHTML = tituloHTML + '<div class="frecuente-vacio">A medida que uses palabras de este lego, las más frecuentes van a aparecer acá...</div>';
+                return;
+            }
+
+            contenedor.innerHTML = tituloHTML + '<div class="frecuentes-grilla" id="frecuentes-grilla-interna"></div>';
+            const grilla = document.getElementById('frecuentes-grilla-interna');
+
+            topItems.forEach((item) => {
+                const idxReal = opciones.findIndex(o => o.hanzi === item.hanzi);
+                const espMostrado = acortarSignificadoSiEsLargo(item.esp);
+                const card = document.createElement('div');
+                card.className = 'frecuente-card';
+                card.style.backgroundColor = cat.bg;
+                card.innerHTML = `
+                    <span class="frecuente-card-pinyin" style="color: ${cat.text}">${item.pinyin}</span>
+                    <span class="frecuente-card-hanzi" style="color: ${cat.text}">${item.hanzi}</span>
+                    <span class="frecuente-card-esp" style="color: ${cat.text}">${espMostrado}</span>
+                `;
+                card.onclick = () => {
+                    bloque.valorSeleccionado = String(idxReal);
+                    registrarUsoFrecuente(bloque.categoriaId, item.hanzi);
+                    renderizarTodo();
+                };
+                grilla.appendChild(card);
+            });
+        }
+
+        function renderizarMenuYZoom() {
+            if (idBloqueEnEdicion === null) {
+                actualizarVistasVacias();
+                return;
+            }
+
+            const bloque = bloquesActivos.find(b => b.id === idBloqueEnEdicion);
+            if (!bloque) {
+                actualizarVistasVacias();
+                return;
+            }
+
+            const cat = bloque.config;
+            const opciones = vocabulario[bloque.categoriaId] || [];
+            let palabraHanziCompleta = "";
+
+            renderizarFrecuentes(bloque, opciones);
+
+            if (bloque.valorSeleccionado !== "") {
+                const itemData = opciones[bloque.valorSeleccionado];
+                palabraHanziCompleta = itemData.hanzi;
+                focusContainer.style.backgroundColor = cat.bg;
+                focusContainer.innerHTML = `
+                    <div class="focus-label" style="color: ${cat.text}">${cat.nombre}</div>
+                    <div class="focus-pinyin" style="color: ${cat.text}">${itemData.pinyin}</div>
+                    <div class="focus-hanzi" style="color: ${cat.text}">${itemData.hanzi}</div>
+                `;
+                focusContainer.onclick = () => reproducirSonido(itemData.hanzi);
+                focusContainer.style.cursor = "pointer";
+            } else {
+                focusContainer.style.backgroundColor = 'var(--bg-paneles)';
+                focusContainer.innerHTML = `
+                    <div class="focus-label">${cat.nombre}</div>
+                    <div class="focus-pinyin" style="opacity: 0.2; color: ${cat.text}">?</div>
+                    <div class="focus-hanzi" style="color: ${cat.text}; opacity: 0.5;">- Vacío -</div>
+                `;
+                focusContainer.onclick = null;
+                focusContainer.style.cursor = "default";
+            }
+
+            flatMenuArea.innerHTML = "";
+            if (opciones.length === 0) {
+                flatMenuArea.innerHTML = `<div style="color: var(--texto-tenue); margin: auto; font-style: italic; font-size: 0.85rem; text-align: center;">Próximamente más palabras en esta categoría...</div>`;
+            } else {
+                opciones.forEach((item, idx) => {
+                    const flatItem = document.createElement('div');
+                    flatItem.className = 'flat-item';
+                    flatItem.style.borderLeft = `5px solid ${cat.text}`;
+                    flatItem.innerHTML = `
+                        <span style="font-size: 1.1rem; font-weight: 700; color: ${cat.text}">${item.pinyin} <small style="font-size:0.9rem; font-weight:600; color: var(--texto-medio); margin-left:6px;">[ ${item.hanzi} ]</small></span>
+                        <span style="color: var(--texto-medio); font-weight: 600; font-size: 0.88rem;">= ${item.esp}</span>
+                    `;
+                    flatItem.onclick = () => {
+                        bloque.valorSeleccionado = String(idx);
+                        registrarUsoFrecuente(bloque.categoriaId, item.hanzi);
+                        renderizarTodo();
+                    };
+                    flatMenuArea.appendChild(flatItem);
+                });
+            }
+
+            componentsDisplayArea.innerHTML = `<div class="components-title">Estructura del Bloque</div>`;
+            
+            if (palabraHanziCompleta === "") {
+                componentsDisplayArea.innerHTML += `<div style="color: var(--texto-tenue); margin: auto; font-style: italic; font-size: 0.75rem; text-align: center; padding: 10px;">Selecciona una palabra para ver sus raíces...</div>`;
+            } else {
+                const caracteresIndividuales = Array.from(palabraHanziCompleta);
+                
+                caracteresIndividuales.forEach(char => {
+                    const infoChar = diccionarioCaracteres[char] || { pinyin: "?", significado: "Significado individual", categoria: null };
+                    
+                    const catAsignada = todasLasCategorias.find(c => c.id === infoChar.categoria);
+                    
+                    const colorBorde = catAsignada ? catAsignada.text : "#3b82f6";
+                    const colorFondo = catAsignada ? catAsignada.bg : "#f8fafc";
+                    
+                    const card = document.createElement('div');
+                    card.className = 'component-mini-card';
+                    card.style.borderLeft = `3px solid ${colorBorde}`;
+                    card.style.backgroundColor = colorFondo;
+                    card.style.cursor = "pointer";
+                    card.onclick = () => reproducirSonido(char);
+                    
+                    card.innerHTML = `
+                        <div class="component-row">
+                            <span class="component-hanzi" style="color: ${colorBorde}">${char}</span>
+                            <span class="component-pinyin" style="color: ${colorBorde}">${infoChar.pinyin}</span>
+                        </div>
+                        <div class="component-meaning" style="color: #334155">${infoChar.significado}</div>
+                    `;
+                    componentsDisplayArea.appendChild(card);
+                });
+            }
+        }
+
+        function renderizarFraseInferior() {
+            const phraseOutput = document.getElementById('phrase-output');
+            phraseOutput.innerHTML = "";
+
+            const bloquesConContenido = bloquesActivos.filter(b => b.valorSeleccionado !== "");
+
+            bloquesConContenido.forEach((bloque) => {
+                const data = vocabulario[bloque.categoriaId][bloque.valorSeleccionado];
+                const wordBlock = document.createElement('div');
+                wordBlock.className = 'word-block';
+                wordBlock.style.backgroundColor = bloque.config.bg;
+                wordBlock.style.color = bloque.config.text;
+                
+                // --- EVENTO DE REPRODUCCIÓN ---
+                wordBlock.onclick = () => reproducirSonido(data.hanzi);
+
+                wordBlock.innerHTML = `
+                    <span class="block-pinyin">${data.pinyin}</span>
+                    <span class="block-hanzi">${data.hanzi}</span>
+                    <div class="block-translation" style="color: ${bloque.config.text}">${data.esp}</div>
+                `;
+                phraseOutput.appendChild(wordBlock);
+            });
+        }
+
+        function actualizarVistasVacias() {
+            flatMenuArea.innerHTML = `<div style="color: var(--texto-tenue); margin: auto; font-style: italic; font-size: 0.85rem; text-align: center;">Añadí o seleccioná una ficha para desplegar sus palabras...</div>`;
+            componentsDisplayArea.innerHTML = `
+                <div class="components-title">Estructura del Bloque</div>
+                <div style="color: var(--texto-tenue); margin: auto; font-style: italic; font-size: 0.75rem; text-align: center; padding: 10px;">Ficha no seleccionada...</div>
+            `;
+            renderizarFrecuentes(null, []);
+            focusContainer.style.backgroundColor = 'var(--bg-paneles)';
+            focusContainer.innerHTML = `
+                <div class="focus-label">BLOQUES</div>
+                <div class="focus-pinyin" style="opacity: 0.15; color:#000;">空</div>
+                <div class="focus-hanzi" style="opacity:0.3">-</div>
+            `;
+            focusContainer.onclick = null;
+        }
+
+        function renderizarTodo() {
+            renderizarWorkspace();
+            renderizarMenuYZoom();
+            renderizarFraseInferior();
+        }
+
+        // --- LLUVIA DE SAKURA (decorativa, de fondo) ---
+        const formasParticulaPorSkin = {
+            sakura: (color) => `<svg viewBox="0 0 32 32" width="100%" height="100%"><path d="M16 2 C20 2 23 6 21 11 C26 10 30 14 28 18 C30 22 27 27 22 26 C22 30 18 32 16 30 C14 32 10 30 10 26 C5 27 2 22 4 18 C2 14 6 10 11 11 C9 6 12 2 16 2 Z" fill="${color}" opacity="0.85"/></svg>`,
+            natural: (color) => `<svg viewBox="0 0 32 16" width="100%" height="100%"><path d="M0 8 C8 0, 24 0, 32 8 C24 16, 8 16, 0 8 Z" fill="${color}" opacity="0.8"/></svg>`,
+            restaurante: (color) => `<svg viewBox="0 0 24 32" width="100%" height="100%"><ellipse cx="12" cy="14" rx="9" ry="12" fill="${color}" opacity="0.85"/><rect x="9" y="25" width="6" height="6" fill="${color}" opacity="0.6"/></svg>`
+        };
+
+        function iniciarLluviaDeSakura(skinId) {
+            const contenedor = document.getElementById('sakura-fondo');
+            if (!contenedor) return;
+            contenedor.innerHTML = "";
+
+            const colorParticula = getComputedStyle(document.documentElement).getPropertyValue('--color-particula').trim();
+            const generarForma = formasParticulaPorSkin[skinId] || formasParticulaPorSkin.sakura;
+            const particulaSVG = generarForma(colorParticula);
+
+            const NUM_PARTICULAS = 14;
+
+            for (let i = 0; i < NUM_PARTICULAS; i++) {
+                const particula = document.createElement('div');
+                particula.className = 'petalo-sakura';
+                particula.innerHTML = particulaSVG;
+
+                const tamano = 14 + Math.random() * 14;
+                const posicionInicial = Math.random() * 100;
+                const duracion = 9 + Math.random() * 8;
+                const demora = Math.random() * 12;
+                const balanceo = 30 + Math.random() * 50;
+                const direccionGiro = Math.random() > 0.5 ? 1 : -1;
+
+                particula.style.left = posicionInicial + '%';
+                particula.style.width = tamano + 'px';
+                particula.style.height = tamano + 'px';
+                particula.style.setProperty('--sway', (balanceo * direccionGiro) + 'px');
+                particula.style.setProperty('--rot', (360 * direccionGiro) + 'deg');
+                particula.style.animationDuration = duracion + 's';
+                particula.style.animationDelay = '-' + demora + 's';
+
+                contenedor.appendChild(particula);
+            }
+        }
+
+        // --- SISTEMA DE SKINS ---
+        const ICONOS_SKIN = {
+            sakura: "🌸",
+            natural: "🎍",
+            restaurante: "🏮"
+        };
+
+        function cambiarSkin(skinId) {
+            document.documentElement.setAttribute('data-skin', skinId);
+            document.getElementById('selector-skin-icono').innerText = ICONOS_SKIN[skinId] || "🌸";
+
+            try {
+                localStorage.setItem('bloquesChino_skin', skinId);
+            } catch (e) {
+                // localStorage no disponible; el skin no persiste entre sesiones pero la app sigue funcionando
+            }
+
+            iniciarLluviaDeSakura(skinId);
+            cerrarMenuSkins();
+        }
+
+        function toggleMenuSkins() {
+            document.getElementById('menu-skins').classList.toggle('abierto');
+        }
+
+        function cerrarMenuSkins() {
+            document.getElementById('menu-skins').classList.remove('abierto');
+        }
+
+        function cargarSkinGuardado() {
+            let skinGuardado = 'sakura';
+            try {
+                skinGuardado = localStorage.getItem('bloquesChino_skin') || 'sakura';
+            } catch (e) {
+                // sin localStorage, se usa sakura por defecto
+            }
+            document.documentElement.setAttribute('data-skin', skinGuardado);
+            document.getElementById('selector-skin-icono').innerText = ICONOS_SKIN[skinGuardado] || "🌸";
+            return skinGuardado;
+        }
+
+        // Cierra el menú de skins si se toca en cualquier otro lugar de la pantalla
+        document.addEventListener('click', (evento) => {
+            const menu = document.getElementById('menu-skins');
+            const boton = document.getElementById('selector-skin-btn');
+            if (menu.classList.contains('abierto') && !menu.contains(evento.target) && !boton.contains(evento.target)) {
+                cerrarMenuSkins();
+            }
+        });
+
+        inicializarBotoneras();
+        const skinInicial = cargarSkinGuardado();
+        iniciarLluviaDeSakura(skinInicial);
+    </script>
+</body>
+</html>
